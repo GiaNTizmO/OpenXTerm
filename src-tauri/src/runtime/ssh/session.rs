@@ -3,12 +3,14 @@ use std::{fs, io::Read};
 use std::time::Duration;
 
 use libssh_rs::{
-    Channel as LibsshChannel, Session as LibsshSession, Sftp as LibsshSftp, SshOption,
+    AuthStatus, Channel as LibsshChannel, Session as LibsshSession, Sftp as LibsshSftp, SshOption,
 };
 
 use crate::{models::SessionDefinition, proxy::configure_libssh_proxy_socket};
 
 const EMBEDDED_SSH_TIMEOUT: Duration = Duration::from_secs(8);
+const LEGACY_RSA_PUBLIC_KEY_ACCEPTED_TYPES: &str =
+    "ssh-rsa,rsa-sha2-512,rsa-sha2-256,ssh-ed25519,ecdsa-sha2-nistp521,ecdsa-sha2-nistp384,ecdsa-sha2-nistp256";
 
 use super::super::x11::X11ForwardConfig;
 use super::super::{expand_tilde, shell_quote};
@@ -166,6 +168,125 @@ pub(in crate::runtime) fn should_retry_interactive_password(
         || normalized.contains("access denied")
 }
 
+fn should_retry_key_auth_with_legacy_rsa(error: &str) -> bool {
+    let normalized = error.to_ascii_lowercase();
+    normalized.contains("publickey")
+        && (normalized.contains("access denied")
+            || normalized.contains("authentication failed")
+            || normalized.contains("requestdenied")
+            || normalized.contains("request denied"))
+}
+
+fn auth_status_error(method: &str, context: &str, status: AuthStatus) -> String {
+    match status {
+        AuthStatus::Denied => {
+            format!("embedded SSH {context} {method} authentication was denied by the server")
+        }
+        AuthStatus::Partial => format!(
+            "embedded SSH {context} {method} authentication only partially succeeded; the server requires another authentication step"
+        ),
+        AuthStatus::Info => format!(
+            "embedded SSH {context} {method} authentication requires additional interactive information"
+        ),
+        AuthStatus::Again => format!(
+            "embedded SSH {context} {method} authentication did not complete yet; retry is required"
+        ),
+        AuthStatus::Success => format!("embedded SSH {context} {method} authentication succeeded"),
+    }
+}
+
+fn ensure_auth_success(
+    status: AuthStatus,
+    method: &str,
+    context: &str,
+    session: &SessionDefinition,
+) -> Result<(), String> {
+    if status == AuthStatus::Success {
+        return Ok(());
+    }
+
+    Err(humanize_ssh_error_message(
+        &auth_status_error(method, context, status),
+        session,
+    ))
+}
+
+fn userauth_public_key_auto_with_legacy_rsa_fallback(
+    ssh: &LibsshSession,
+    key_path: &str,
+    passphrase: Option<&str>,
+    context: &str,
+    session: &SessionDefinition,
+) -> Result<(), String> {
+    match ssh.userauth_public_key_auto(Some(key_path), passphrase) {
+        Ok(AuthStatus::Success) => Ok(()),
+        Ok(status) => {
+            if status != AuthStatus::Denied {
+                return ensure_auth_success(status, "key", context, session);
+            }
+
+            ssh.set_option(SshOption::PublicKeyAcceptedTypes(
+                LEGACY_RSA_PUBLIC_KEY_ACCEPTED_TYPES.into(),
+            ))
+            .map_err(|error| {
+                humanize_ssh_error_message(
+                    &format!(
+                        "embedded SSH {context} failed to enable legacy ssh-rsa key signatures: {error}"
+                    ),
+                    session,
+                )
+            })?;
+
+            ssh.userauth_public_key_auto(Some(key_path), passphrase)
+                .map_err(|legacy_error| {
+                    humanize_ssh_error_message(
+                        &format!(
+                            "embedded SSH {context} key authentication failed after enabling legacy ssh-rsa signatures: {legacy_error}. Initial status: {status:?}"
+                        ),
+                        session,
+                    )
+                })
+                .and_then(|legacy_status| {
+                    ensure_auth_success(legacy_status, "key", context, session)
+                })
+        }
+        Err(initial_error) => {
+            let initial_message = initial_error.to_string();
+            if !should_retry_key_auth_with_legacy_rsa(&initial_message) {
+                return Err(humanize_ssh_error_message(
+                    &format!("embedded SSH {context} key authentication failed: {initial_message}"),
+                    session,
+                ));
+            }
+
+            ssh.set_option(SshOption::PublicKeyAcceptedTypes(
+                LEGACY_RSA_PUBLIC_KEY_ACCEPTED_TYPES.into(),
+            ))
+            .map_err(|error| {
+                humanize_ssh_error_message(
+                    &format!(
+                        "embedded SSH {context} failed to enable legacy ssh-rsa key signatures: {error}"
+                    ),
+                    session,
+                )
+            })?;
+
+            ssh.userauth_public_key_auto(Some(key_path), passphrase)
+                .map_err(|legacy_error| {
+                    humanize_ssh_error_message(
+                        &format!(
+                            "embedded SSH {context} key authentication failed after enabling legacy ssh-rsa signatures: {legacy_error}. Initial failure: {initial_message}"
+                        ),
+                        session,
+                    )
+                })
+                .and_then(|legacy_status| {
+                    ensure_auth_success(legacy_status, "key", context, session)
+                })
+        }
+    }
+}
+
 fn connect_embedded_ssh_session_with_username(
     session: &SessionDefinition,
     username: &str,
@@ -213,13 +334,15 @@ fn connect_embedded_ssh_session_with_username(
                         .map(str::to_string)
                 })
                 .ok_or_else(windows_credential_reuse_message)?;
-            ssh.userauth_password(None, Some(&password))
+            let status = ssh
+                .userauth_password(None, Some(&password))
                 .map_err(|error| {
                     humanize_ssh_error_message(
                         &format!("embedded SSH {context} password authentication failed: {error}"),
                         session,
                     )
                 })?;
+            ensure_auth_success(status, "password", context, session)?;
         }
         "key" => {
             let key_path = session
@@ -238,21 +361,18 @@ fn connect_embedded_ssh_session_with_username(
                         .as_deref()
                         .filter(|value| !value.is_empty())
                 });
-            ssh.userauth_public_key_auto(Some(&expanded), passphrase)
-                .map_err(|error| {
-                    humanize_ssh_error_message(
-                        &format!("embedded SSH {context} key authentication failed: {error}"),
-                        session,
-                    )
-                })?;
+            userauth_public_key_auto_with_legacy_rsa_fallback(
+                &ssh, &expanded, passphrase, context, session,
+            )?;
         }
         _ => {
-            ssh.userauth_agent(Some(username)).map_err(|error| {
+            let status = ssh.userauth_agent(Some(username)).map_err(|error| {
                 humanize_ssh_error_message(
                     &format!("embedded SSH {context} agent authentication failed: {error}"),
                     session,
                 )
             })?;
+            ensure_auth_success(status, "agent", context, session)?;
         }
     }
 
@@ -329,4 +449,43 @@ pub(crate) fn open_embedded_sftp(
     let ssh = connect_embedded_ssh_session(session, runtime_tab_id, context)?;
     ssh.sftp()
         .map_err(|error| format!("failed to open embedded SSH SFTP subsystem: {error}"))
+}
+
+#[cfg(test)]
+mod tests {
+    use libssh_rs::AuthStatus;
+
+    use super::{auth_status_error, should_retry_key_auth_with_legacy_rsa};
+
+    #[test]
+    fn retries_publickey_access_denied_with_legacy_rsa() {
+        assert!(should_retry_key_auth_with_legacy_rsa(
+            "RequestDenied: Access denied for 'publickey'. Authentication that can continue: publickey,password",
+        ));
+        assert!(should_retry_key_auth_with_legacy_rsa(
+            "embedded SSH interactive session key authentication failed: authentication failed for publickey",
+        ));
+    }
+
+    #[test]
+    fn does_not_retry_unrelated_key_errors_with_legacy_rsa() {
+        assert!(!should_retry_key_auth_with_legacy_rsa(
+            "failed to read private key file: permission denied",
+        ));
+        assert!(!should_retry_key_auth_with_legacy_rsa(
+            "password authentication failed",
+        ));
+    }
+
+    #[test]
+    fn auth_status_errors_explain_denied_and_partial_auth() {
+        assert!(
+            auth_status_error("key", "interactive session", AuthStatus::Denied)
+                .contains("key authentication was denied")
+        );
+        assert!(
+            auth_status_error("agent", "status probe", AuthStatus::Partial)
+                .contains("requires another authentication step")
+        );
+    }
 }

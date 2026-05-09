@@ -67,3 +67,14 @@ The workflow fails early if the generated release version does not match all app
 - `src-tauri/Cargo.lock`
 
 Example: input `0.2.0` creates tag `v0.2.0` and requires all version files to contain `0.2.0`.
+
+## Changelog
+
+Before triggering the release workflow, update `CHANGELOG.md` manually:
+
+1. Move all entries from `## Unreleased` into a new version section:
+
+   ```markdown
+   ## vX.Y.Z (YYYY-MM-DD)
+
+2. Create a fresh empty `## Unreleased` section for the next development cycle.

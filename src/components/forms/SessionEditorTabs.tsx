@@ -1,20 +1,14 @@
 import {
-  Cable,
   ExternalLink,
   FolderTree,
-  HardDrive,
   KeyRound,
   LockKeyhole,
   Monitor,
-  Server,
   ShieldOff,
-  Terminal,
-  Usb,
 } from 'lucide-react'
 
 import { openExternalTarget } from '../../lib/bridge'
-import { getDefaultPort } from '../../lib/sessionUtils'
-import type { LocalX11Support, SessionDraft, SessionKind } from '../../types/domain'
+import type { LocalX11Support, SessionDraft } from '../../types/domain'
 import { FontFamilyPicker } from './FontFamilyPicker'
 import {
   DEFAULT_TERMINAL_BACKGROUND,
@@ -26,20 +20,6 @@ import {
 } from './sessionEditorHelpers'
 
 type UpdateSessionDraft = (patch: Partial<SessionDraft>) => void
-
-const SESSION_KIND_OPTIONS: Array<{
-  kind: SessionKind
-  label: string
-  note: string
-  icon: typeof Server
-}> = [
-  { kind: 'local', label: 'Local', note: 'This computer', icon: Terminal },
-  { kind: 'ssh', label: 'SSH', note: 'Shell access', icon: Server },
-  { kind: 'telnet', label: 'Telnet', note: 'Legacy terminal', icon: Cable },
-  { kind: 'serial', label: 'Serial', note: 'Direct line', icon: Usb },
-  { kind: 'sftp', label: 'SFTP', note: 'Secure file browser', icon: HardDrive },
-  { kind: 'ftp', label: 'FTP', note: 'File transfer', icon: HardDrive },
-]
 
 const AUTH_OPTIONS: Array<{
   value: SessionDraft['authType']
@@ -93,7 +73,7 @@ export function SessionEditorGeneralTab({
   updateDraft: UpdateSessionDraft
 }) {
   return (
-    <section className="session-editor-tab-panel">
+    <section className="session-editor-identity-panel" aria-label="Session identity">
       <div className="session-editor-grid session-editor-grid-basics">
         <label className="editor-field editor-field-wide">
           <span>Session name</span>
@@ -116,39 +96,6 @@ export function SessionEditorGeneralTab({
             ))}
           </select>
         </label>
-      </div>
-
-      <div className="session-kind-grid" role="radiogroup" aria-label="Session type">
-        {SESSION_KIND_OPTIONS.map((option) => {
-          const Icon = option.icon
-          const selected = draft.kind === option.kind
-          return (
-            <button
-              key={option.kind}
-              className={`session-kind-option ${selected ? 'active' : ''}`}
-              type="button"
-              role="radio"
-              aria-checked={selected}
-              onClick={() => {
-                updateDraft({
-                  kind: option.kind,
-                  port: getDefaultPort(option.kind),
-                  host: option.kind === 'local' ? '' : draft.host,
-                  username: option.kind === 'local' ? '' : draft.username,
-                  authType: option.kind === 'local' ? 'none' : draft.authType,
-                })
-              }}
-            >
-              <span className="session-kind-icon">
-                <Icon size={15} />
-              </span>
-              <span className="session-kind-copy">
-                <strong>{option.label}</strong>
-                <span>{option.note}</span>
-              </span>
-            </button>
-          )
-        })}
       </div>
 
       <div className="session-editor-footer-summary">
@@ -257,8 +204,8 @@ export function SessionEditorConnectionTab({
 
   return (
     <section className="session-editor-tab-panel">
-      <div className="session-editor-grid">
-        <label className="editor-field editor-field-wide">
+      <div className="session-editor-grid connection-endpoint-grid">
+        <label className="editor-field">
           <span>Host or IP</span>
           <input
             required
@@ -281,7 +228,7 @@ export function SessionEditorConnectionTab({
           />
         </label>
 
-        <label className="editor-field editor-field-wide">
+        <label className="editor-field">
           <span>Username</span>
           <input
             placeholder={draft.kind === 'ssh' ? 'Leave empty to prompt in terminal' : ''}
@@ -294,7 +241,7 @@ export function SessionEditorConnectionTab({
       {!isFile && (
         <>
           <div className="session-editor-inline-heading">Authentication</div>
-          <div className="session-auth-grid" role="radiogroup" aria-label="Authentication type">
+          <div className="session-auth-grid session-auth-grid-compact" role="radiogroup" aria-label="Authentication type">
             {AUTH_OPTIONS.map((option) => {
               const Icon = option.icon
               const selected = draft.authType === option.value
@@ -430,106 +377,110 @@ export function SessionEditorTerminalTab({
   updateDraft: UpdateSessionDraft
 }) {
   return (
-    <section className="session-editor-tab-panel">
-      <div className="session-editor-inline-heading">Presets</div>
-      <div className="terminal-preset-grid" role="list" aria-label="Terminal appearance presets">
-        {TERMINAL_PRESETS.map((preset) => {
-          const active = matchesTerminalPreset(draft, preset)
-          return (
-            <button
-              key={preset.id}
-              className={`terminal-preset-card ${active ? 'active' : ''}`}
-              type="button"
-              onClick={() =>
-                updateDraft({
-                  terminalFontFamily: preset.fontFamily,
-                  terminalFontSize: preset.fontSize,
-                  terminalForeground: preset.foreground,
-                  terminalBackground: preset.background,
-                })}
-            >
-              <span
-                className="terminal-preset-swatch"
-                style={{
-                  background: preset.background,
-                  color: preset.foreground,
-                  fontFamily: preset.fontFamily,
-                  fontSize: `${preset.fontSize}px`,
-                }}
+    <section className="session-editor-tab-panel terminal-editor-panel">
+      <div className="terminal-editor-presets">
+        <div className="session-editor-inline-heading">Presets</div>
+        <div className="terminal-preset-grid" role="list" aria-label="Terminal appearance presets">
+          {TERMINAL_PRESETS.map((preset) => {
+            const active = matchesTerminalPreset(draft, preset)
+            return (
+              <button
+                key={preset.id}
+                className={`terminal-preset-card ${active ? 'active' : ''}`}
+                type="button"
+                onClick={() =>
+                  updateDraft({
+                    terminalFontFamily: preset.fontFamily,
+                    terminalFontSize: preset.fontSize,
+                    terminalForeground: preset.foreground,
+                    terminalBackground: preset.background,
+                  })}
               >
-                $ _
-              </span>
-              <span className="terminal-preset-copy">
-                <strong>{preset.label}</strong>
-                <span>{preset.note}</span>
-              </span>
-            </button>
-          )
-        })}
+                <span
+                  className="terminal-preset-swatch"
+                  style={{
+                    background: preset.background,
+                    color: preset.foreground,
+                    fontFamily: preset.fontFamily,
+                    fontSize: `${preset.fontSize}px`,
+                  }}
+                >
+                  $ _
+                </span>
+                <span className="terminal-preset-copy">
+                  <strong>{preset.label}</strong>
+                  <span>{preset.note}</span>
+                </span>
+              </button>
+            )
+          })}
+        </div>
       </div>
 
-      <div className="session-editor-grid">
-        <label className="editor-field editor-field-compact">
-          <span>Font size</span>
-          <input
-            min={9}
-            max={32}
-            type="number"
-            value={draft.terminalFontSize}
-            onChange={(event) => updateDraft({ terminalFontSize: Number(event.target.value) })}
+      <div className="terminal-editor-controls">
+        <div className="terminal-editor-font-row">
+          <FontFamilyPicker
+            availableFonts={systemFonts}
+            error={systemFontsError}
+            loading={systemFontsBusy}
+            value={draft.terminalFontFamily}
+            onChange={(value) => updateDraft({ terminalFontFamily: value })}
           />
-        </label>
-      </div>
 
-      <FontFamilyPicker
-        availableFonts={systemFonts}
-        error={systemFontsError}
-        loading={systemFontsBusy}
-        value={draft.terminalFontFamily}
-        onChange={(value) => updateDraft({ terminalFontFamily: value })}
-      />
+          <label className="editor-field editor-field-compact">
+            <span>Font size</span>
+            <input
+              min={9}
+              max={32}
+              type="number"
+              value={draft.terminalFontSize}
+              onChange={(event) => updateDraft({ terminalFontSize: Number(event.target.value) })}
+            />
+          </label>
+        </div>
 
-      <div className="session-editor-grid">
-        <ColorField
-          label="Text color"
-          value={draft.terminalForeground}
-          onChange={(value) => updateDraft({ terminalForeground: value })}
-        />
-        <ColorField
-          label="Background color"
-          value={draft.terminalBackground}
-          onChange={(value) => updateDraft({ terminalBackground: value })}
-        />
-      </div>
+        <div className="session-editor-grid">
+          <ColorField
+            label="Text color"
+            value={draft.terminalForeground}
+            onChange={(value) => updateDraft({ terminalForeground: value })}
+          />
+          <ColorField
+            label="Background color"
+            value={draft.terminalBackground}
+            onChange={(value) => updateDraft({ terminalBackground: value })}
+          />
+        </div>
 
-      <div className="terminal-reset-row">
-        <button
-          className="ghost-button"
-          type="button"
-          onClick={() =>
-            updateDraft({
-              terminalFontFamily: DEFAULT_TERMINAL_FONT,
-              terminalFontSize: DEFAULT_TERMINAL_SIZE,
-              terminalForeground: DEFAULT_TERMINAL_FOREGROUND,
-              terminalBackground: DEFAULT_TERMINAL_BACKGROUND,
-            })}
-        >
-          Reset to default
-        </button>
-      </div>
+        <div className="terminal-preview-card">
+          <div
+            className="terminal-preview-swatch"
+            style={{
+              background: draft.terminalBackground,
+              color: draft.terminalForeground,
+              fontFamily: draft.terminalFontFamily || DEFAULT_TERMINAL_FONT,
+              fontSize: `${draft.terminalFontSize}px`,
+            }}
+          >
+            <span>{draft.username || 'user'}@openxterm:~$ ls</span>
+            <span>Documents  Projects  notes.txt</span>
+          </div>
+        </div>
 
-      <div className="terminal-preview-card">
-        <div
-          className="terminal-preview-swatch"
-          style={{
-            background: draft.terminalBackground,
-            color: draft.terminalForeground,
-            fontFamily: draft.terminalFontFamily || DEFAULT_TERMINAL_FONT,
-            fontSize: `${draft.terminalFontSize}px`,
-          }}
-        >
-          <span>{draft.username || 'user'}@openxterm:~$ ls</span>
-          <span>Documents  Projects  notes.txt</span>
+        <div className="terminal-reset-row">
+          <button
+            className="ghost-button"
+            type="button"
+            onClick={() =>
+              updateDraft({
+                terminalFontFamily: DEFAULT_TERMINAL_FONT,
+                terminalFontSize: DEFAULT_TERMINAL_SIZE,
+                terminalForeground: DEFAULT_TERMINAL_FOREGROUND,
+                terminalBackground: DEFAULT_TERMINAL_BACKGROUND,
+              })}
+          >
+            Reset to default
+          </button>
         </div>
       </div>
     </section>

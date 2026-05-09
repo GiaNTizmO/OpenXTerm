@@ -1,6 +1,6 @@
 import type { SessionDefinition, SessionDraft, SessionKind } from '../../types/domain'
 
-export type SessionEditorTab = 'general' | 'connection' | 'terminal' | 'advanced'
+export type SessionEditorTab = 'connection' | 'terminal' | 'advanced'
 export interface SessionDraftValidationResult {
   message: string
   tab: SessionEditorTab
@@ -132,7 +132,7 @@ export function createDraft(session?: SessionDefinition | null, initialFolderPat
 }
 
 export function supportsConnectionTab(kind: SessionKind) {
-  return kind !== 'local'
+  return Boolean(kind)
 }
 
 export function supportsAdvancedTab(kind: SessionKind) {
@@ -155,7 +155,7 @@ export function validateSessionDraft(draft: SessionDraft): SessionDraftValidatio
   if (!draft.name.trim()) {
     return {
       message: 'Session name is required.',
-      tab: 'general',
+      tab: 'connection',
     }
   }
 
@@ -188,8 +188,6 @@ export function validateSessionDraft(draft: SessionDraft): SessionDraftValidatio
 
 export function tabDescription(tab: SessionEditorTab, kind: SessionKind) {
   switch (tab) {
-    case 'general':
-      return 'Name, folder, and transport type.'
     case 'connection':
       if (kind === 'serial') {
         return 'Port and line parameters.'

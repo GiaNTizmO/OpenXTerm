@@ -1,6 +1,6 @@
 {
   "name": "openxterm",
-  "version": "0.0.4",
+  "version": "0.0.5",
   "description": "Open-source desktop terminal workspace for sessions, SSH, SFTP, and local shells.",
   "author": "GiaNTizmO",
   "license": "MIT",
@@ -9,6 +9,8 @@
     "dev": "vite --host 127.0.0.1 --port 5173",
     "build": "tsc -b && vite build",
     "check": "tsc -b && eslint . && npm run test",
+    "changelog:collect": "node script/collect_release_notes_input.mjs",
+    "changelog:generate": "node script/generate_changelog.mjs",
     "lint": "eslint .",
     "preview": "vite preview --host 127.0.0.1 --port 4173",
     "test": "vitest run",

@@ -1,19 +1,35 @@
-# CHANGELOG
+# Changelog
 
-## Unreleased
+All notable changes to OpenXTerm are documented here.
 
-### Added
+Release entries are generated during the manual CI/CD release flow from GitHub release notes. When `GEMINI_API_KEY` is configured, Gemini 2.5 Flash may rewrite the entry for readability, but the generator validates that pull request references and contributor mentions from GitHub's generated notes are preserved.
 
-- Flat workspace tabstrip
+## v0.0.5 - 2026-05-10
 
-### Changed
+### Highlights
 
-- Updated agent file references
-- Remote file helpers centralized
-- Split transfer upload and download modules
-- Session editor modal redesigned
+-   Add flat workspace tabstrip by @GiaNTizmO
+-   Add status bar settings and about tab by @GiaNTizmO
 
-## v0.0.4 (2026-05-08)
+### Fixes
+
+-   Fix release changelog source collection by @GiaNTizmO
+-   Fix release notes date and asset filtering by @GiaNTizmO
+
+### Maintenance
+
+-   Centralize remote file helpers by @GiaNTizmO
+-   Split transfer upload and download modules by @GiaNTizmO
+-   Redesign session editor modal by @GiaNTizmO
+-   Add AI-assisted release changelog generation by @GiaNTizmO
+
+### Documentation
+
+-   Update agent file references by @GiaNTizmO
+-   Update img showcase by @GiaNTizmO
+-   Add legal hygiene docs and about links by @GiaNTizmO
+
+## v0.0.4 - 2026-05-08
 
 ### Added
 
@@ -28,7 +44,7 @@
 
 - Tightened terminal surface spacing
 
-## v0.0.3 (2026-05-05)
+## v0.0.3 - 2026-05-05
 
 ### Added
 
@@ -50,7 +66,7 @@
 - Shared remote file drag and upload hooks
 
 
-## v0.0.2 (2026-05-04)
+## v0.0.2 - 2026-05-04
 
 ### Added
 
@@ -83,7 +99,7 @@
 - Updated roadmap and SFTP smoke QA documentation
 - Updated documentation to match implementation state
 
-## v0.0.1 (2026-04-25)
+## v0.0.1 - 2026-04-25
 
 ### Added
 
@@ -101,10 +117,3 @@
 - Linux GitHub Actions dependency handling
 - Release workflow Rust version parsing
 - v0.0.1 release version validation
-
----
-[Unreleased]: https://github.com/OpenXTerm/OpenXTerm/compare/v0.0.4...HEAD
-[v0.0.4]: https://github.com/OpenXTerm/OpenXTerm/compare/v0.0.3...v0.0.4
-[v0.0.3]: https://github.com/OpenXTerm/OpenXTerm/compare/v0.0.2...v0.0.3
-[v0.0.2]: https://github.com/OpenXTerm/OpenXTerm/compare/v0.0.1...v0.0.2
-[v0.0.1]: https://github.com/OpenXTerm/OpenXTerm/releases/tag/v0.0.1

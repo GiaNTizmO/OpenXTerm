@@ -9,7 +9,7 @@ OpenXTerm releases are manual. Normal commits and pushed tags do not start the C
 - `version`: `0.2.0`
 - `release_type`: `release` or `prerelease`
 
-2. GitHub Actions updates all version files on `main`, creates a release commit, and pushes it:
+2. GitHub Actions collects changelog source data from GitHub release notes plus the PRs and direct commits in the release range, generates a `CHANGELOG.md` entry, optionally asks Gemini 2.5 Flash to rewrite it when `GEMINI_API_KEY` is configured, validates that pull request references and contributor mentions are preserved, updates all version files on `main`, creates a release commit, and pushes it:
 
 ```bash
 git commit -m "Release v0.2.0"
@@ -21,13 +21,34 @@ git commit -m "Release v0.2.0"
 git tag -a v0.2.0 -m "OpenXTerm v0.2.0"
 ```
 
-4. GitHub Actions checks out that tag, builds the currently enabled release bundles, generates release notes from the previous version tag, and publishes a GitHub Release.
+4. GitHub Actions checks out that tag, builds the currently enabled release bundles, generates polished GitHub Release notes from the same source data, and publishes a GitHub Release.
 
 The local helper is still available if a version must be changed outside CI:
 
 ```bash
 npm run version:set -- 0.2.0
 ```
+
+The changelog collector and generator can also be run locally with an already-generated notes file:
+
+```bash
+npm run changelog:collect -- \
+  --github-notes generated-release-notes.md \
+  --output collected-release-notes-input.md \
+  --release-tag v0.2.0 \
+  --previous-tag v0.1.0 \
+  --target HEAD
+
+npm run changelog:generate -- \
+  --input collected-release-notes-input.md \
+  --output generated-changelog-entry.md \
+  --release-tag v0.2.0 \
+  --previous-tag v0.1.0 \
+  --release-date 2026-05-10 \
+  --changelog-path CHANGELOG.md
+```
+
+Set the GitHub Actions secret `GEMINI_API_KEY` to enable the Gemini rewrite path in CI. If the key is missing, the model call fails, the model output drops pull request references or contributor mentions, or the model invents a heading date, the script normalizes the heading and falls back to the collected release source when needed.
 
 ## Release Assets
 
@@ -37,7 +58,19 @@ The release job uploads the native Tauri bundle outputs from enabled matrix targ
 - Windows: Tauri installer bundles plus `openxterm-windows-*-portable.zip`
 - Linux: Tauri Linux bundles such as AppImage / Debian package outputs, depending on the bundler output for that runner
 
+Internal package build files such as `control.tar.gz` and `data.tar.gz` are excluded from uploaded release artifacts.
+
 The configured build matrix includes Linux X64, Linux ARM64, Windows X64, Windows ARM64, macOS ARM64, and macOS X64. For the current CI/CD test pass only Linux X64, Windows X64, and macOS ARM64 are enabled; disabled targets remain in the workflow with `enabled: false`.
+
+## License Notices
+
+Release artifacts must preserve third-party license notices. Before publishing a release, review:
+
+- [`LICENSE`](../LICENSE)
+- [`THIRD_PARTY_LICENSES.md`](../THIRD_PARTY_LICENSES.md)
+- [`TRADEMARKS.md`](../TRADEMARKS.md)
+
+The current hand-written third-party notice file covers the known release-sensitive dependencies: vendored libssh, vendored OpenSSL, and `serialport`. The first-pass legal hygiene task is tracked in [#28](https://github.com/OpenXTerm/OpenXTerm/issues/28). Automated dependency license report generation is tracked in [#29](https://github.com/OpenXTerm/OpenXTerm/issues/29) and should be run once it exists.
 
 ## Release Notes
 
@@ -46,7 +79,19 @@ The workflow creates `v<version>`, finds the previous semver-like tag, then asks
 - previous tag
 - selected release tag
 
-Example: running the workflow for `v0.2.0` after `v0.1.0` generates notes for changes since `v0.1.0`.
+GitHub's generated notes can be sparse when the range mostly contains direct commits, so the workflow also collects:
+
+- pull requests associated with commits in the release range
+- direct commits that are not associated with a pull request
+
+That collected source is the source of truth for pull request references and contributor mentions. The changelog generator then either:
+
+- rewrites them with Gemini 2.5 Flash when `GEMINI_API_KEY` is configured, or
+- uses the collected source directly as a fallback.
+
+The generator validates that pull request URLs, `#123` references, and `@contributor` mentions from the collected source are still present. It also forces the first heading to the CI-provided release date. If validation fails, it uses the fallback notes.
+
+Example: running the workflow for `v0.2.0` after `v0.1.0` creates a `CHANGELOG.md` entry and GitHub Release notes for changes since `v0.1.0`.
 
 ## Manual Build Matrix
 
@@ -67,15 +112,3 @@ The workflow fails early if the generated release version does not match all app
 - `src-tauri/Cargo.lock`
 
 Example: input `0.2.0` creates tag `v0.2.0` and requires all version files to contain `0.2.0`.
-
-## Changelog
-
-Before triggering the release workflow, update `CHANGELOG.md` manually:
-
-1. Move all entries from `## Unreleased` into a new version section:
-
-   ```markdown
-   ## vX.Y.Z (YYYY-MM-DD)
-   ```
-
-2. Create a fresh empty `## Unreleased` section for the next development cycle.

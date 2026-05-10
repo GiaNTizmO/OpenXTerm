@@ -4,9 +4,13 @@ import {
   bootstrapState,
   savePreferences,
 } from '../lib/bridge'
+import {
+  DEFAULT_STATUS_BAR_METRICS,
+  clampSidebarWidth,
+  normalizeUiPreferences,
+} from '../lib/preferences'
 import { createWelcomeTab } from '../lib/sessionUtils'
 import {
-  clampSidebarWidth,
   sortMacros,
   sortSessionFolders,
   sortSessions,
@@ -33,6 +37,8 @@ export const useOpenXTermStore = create<OpenXTermState>((set, get) => ({
     activeSidebar: 'sessions',
     sidebarWidth: 252,
     statusBarVisible: true,
+    statusBarSize: 'regular',
+    statusBarMetrics: { ...DEFAULT_STATUS_BAR_METRICS },
   },
   tabs: [createWelcomeTab()],
   activeTabId: 'welcome',
@@ -58,11 +64,7 @@ export const useOpenXTermStore = create<OpenXTermState>((set, get) => ({
       sessions: sortSessions(bootstrap.sessions),
       sessionFolders: sortSessionFolders(bootstrap.sessionFolders ?? []),
       macros: sortMacros(bootstrap.macros),
-      preferences: {
-        ...bootstrap.preferences,
-        sidebarWidth: clampSidebarWidth(bootstrap.preferences.sidebarWidth ?? 252),
-        statusBarVisible: bootstrap.preferences.statusBarVisible ?? true,
-      },
+      preferences: normalizeUiPreferences(bootstrap.preferences),
       tabs: [createWelcomeTab()],
       activeTabId: 'welcome',
       terminalFeeds: {},
@@ -78,11 +80,7 @@ export const useOpenXTermStore = create<OpenXTermState>((set, get) => ({
     })
   },
   async updatePreferences(preferences) {
-    const nextPreferences = {
-      ...preferences,
-      sidebarWidth: clampSidebarWidth(preferences.sidebarWidth ?? 252),
-      statusBarVisible: preferences.statusBarVisible ?? true,
-    }
+    const nextPreferences = normalizeUiPreferences(preferences)
     await savePreferences(nextPreferences)
     set({ preferences: nextPreferences })
   },

@@ -19,6 +19,7 @@ const MENUS: TopBarMenu[] = [
     label: 'OpenXTerm',
     items: [
       { label: 'Settings...', action: 'open-settings' },
+      { label: 'About OpenXTerm', action: 'open-about' },
       { label: 'Lock OpenXTerm', action: 'lock-app' },
     ],
   },
@@ -66,6 +67,7 @@ const MENUS: TopBarMenu[] = [
     label: 'Help',
     items: [
       { label: 'Open Sessions', action: 'show-sessions' },
+      { label: 'About OpenXTerm', action: 'open-about' },
     ],
   },
 ]

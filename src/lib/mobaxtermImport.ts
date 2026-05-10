@@ -1,6 +1,9 @@
 import { normalizeSessionFolderPath } from './sessionUtils'
 import type { SessionDefinition, SessionFolderDefinition } from '../types/domain'
 
+// Clean-room implementation of the observed .mxtsessions plain-text export format.
+// This parser is based on user-exported files only; no MobaXterm/Mobatek source code is used.
+
 interface ParsedImportSession {
   session: SessionDefinition
   folderPath: string

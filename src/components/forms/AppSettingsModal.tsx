@@ -315,6 +315,25 @@ export function AppSettingsModal({
                 <p className="settings-about-note">
                   OpenXTerm is independent software and is not affiliated with, endorsed by, or connected to MobaXterm, Mobatek, or any other terminal product.
                 </p>
+
+                <div className="settings-about-actions" aria-label="Project legal documents">
+                  <a
+                    className="ghost-button settings-about-link"
+                    href="https://github.com/OpenXTerm/OpenXTerm/blob/main/THIRD_PARTY_LICENSES.md"
+                    target="_blank"
+                    rel="noreferrer"
+                  >
+                    Third-party licenses
+                  </a>
+                  <a
+                    className="ghost-button settings-about-link"
+                    href="https://github.com/OpenXTerm/OpenXTerm/blob/main/TRADEMARKS.md"
+                    target="_blank"
+                    rel="noreferrer"
+                  >
+                    Trademarks
+                  </a>
+                </div>
               </div>
             </section>
           )}

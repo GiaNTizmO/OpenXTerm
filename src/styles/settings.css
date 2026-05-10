@@ -170,6 +170,19 @@
   line-height: 1.5;
 }
 
+.settings-about-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.settings-about-link {
+  min-height: 30px;
+  display: inline-flex;
+  align-items: center;
+  text-decoration: none;
+}
+
 .settings-error {
   grid-column: 1 / -1;
   margin: 0 16px 12px;

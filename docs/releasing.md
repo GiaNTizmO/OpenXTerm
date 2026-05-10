@@ -39,6 +39,16 @@ The release job uploads the native Tauri bundle outputs from enabled matrix targ
 
 The configured build matrix includes Linux X64, Linux ARM64, Windows X64, Windows ARM64, macOS ARM64, and macOS X64. For the current CI/CD test pass only Linux X64, Windows X64, and macOS ARM64 are enabled; disabled targets remain in the workflow with `enabled: false`.
 
+## License Notices
+
+Release artifacts must preserve third-party license notices. Before publishing a release, review:
+
+- [`LICENSE`](../LICENSE)
+- [`THIRD_PARTY_LICENSES.md`](../THIRD_PARTY_LICENSES.md)
+- [`TRADEMARKS.md`](../TRADEMARKS.md)
+
+The current hand-written third-party notice file covers the known release-sensitive dependencies: vendored libssh, vendored OpenSSL, and `serialport`. The first-pass legal hygiene task is tracked in [#28](https://github.com/OpenXTerm/OpenXTerm/issues/28). Automated dependency license report generation is tracked in [#29](https://github.com/OpenXTerm/OpenXTerm/issues/29) and should be run once it exists.
+
 ## Release Notes
 
 The workflow creates `v<version>`, finds the previous semver-like tag, then asks GitHub to generate release notes for the diff between:

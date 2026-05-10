@@ -29,6 +29,8 @@ It is built for people who want saved connections, folders, terminal tabs, linke
 
 The project is inspired by the workflow popularized by MobaXterm, but OpenXTerm is independent software and is not affiliated with, endorsed by, or connected to MobaXterm or Mobatek.
 
+MobaXterm belongs to Mobatek. See [TRADEMARKS.md](TRADEMARKS.md) for third-party trademark notices.
+
 ## Current Status
 
 OpenXTerm is alpha software. It is usable for development and testing, but APIs, storage shape, UI details, and packaging behavior may still change before a stable release.
@@ -173,8 +175,8 @@ See [ROADMAP.md](ROADMAP.md) for the active release plan, stable-release blocker
 
 ## FAQ
 
-**Is OpenXTerm a MobaXterm clone?**
-No. It is an independent open-source terminal workspace inspired by session-first tools. The goal is a focused cross-platform workflow, not a complete feature-for-feature clone.
+**Is OpenXTerm affiliated with MobaXterm or Mobatek?**
+No. It is an independent open-source terminal workspace inspired by session-first tools. The goal is a focused cross-platform workflow, not a feature-for-feature replacement.
 
 **Where are stable installers?**
 Not yet published. CI builds bundles for all target platforms, but release signing and notarization are still pending.
@@ -184,7 +186,7 @@ Yes. Start with [CONTRIBUTING.md](CONTRIBUTING.md), [AGENTS.md](AGENTS.md), and 
 
 ## Known Limits
 
-- OpenXTerm is not a finished MobaXterm clone. It covers a focused subset and is evolving quickly.
+- OpenXTerm covers a focused subset of session-first terminal workflows and is evolving quickly.
 - X11 forwarding requires a working local X server: XQuartz on macOS, Xorg/XWayland on Linux, or a Windows X server such as VcXsrv or X410.
 - Remote status metrics are best-effort and depend on the remote OS and available shell tools.
 - Linked SFTP and live status can reuse an interactively entered SSH password only while the originating SSH tab is still connected.
@@ -193,12 +195,10 @@ Yes. Start with [CONTRIBUTING.md](CONTRIBUTING.md), [AGENTS.md](AGENTS.md), and 
 
 ## Trademark Notice
 
-OpenXTerm is independent software and is not affiliated with, endorsed by, sponsored by, or connected to Mobatek or MobaXterm.
-
-MobaXterm belongs to Mobatek:
-
-> © 2008 - 2026 Mobatek. MobaXterm® is a registered trademark of Mobatek.
+OpenXTerm is independent software and is not affiliated with, endorsed by, sponsored by, or connected to Mobatek or MobaXterm. See [TRADEMARKS.md](TRADEMARKS.md).
 
 ## License
 
 MIT. See [LICENSE](LICENSE).
+
+Third-party license notices are tracked in [THIRD_PARTY_LICENSES.md](THIRD_PARTY_LICENSES.md).

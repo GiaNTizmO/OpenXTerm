@@ -161,7 +161,7 @@ The documentation/code audit items from the May 2026 cleanup pass are closed. Fu
 - Storage migrations need versioning before stable release.
 - Automated tests now have a small frontend/backend baseline, but coverage is still narrow and needs expansion around transfers, transports, and storage migrations.
 - Public screenshots and demo clips are not prepared.
-- Dependency and license audit still needs to be done before stable release.
+- First-pass trademark and third-party license notices exist through [#28](https://github.com/OpenXTerm/OpenXTerm/issues/28), but automated dependency/license audit still needs to be completed before stable release through [#29](https://github.com/OpenXTerm/OpenXTerm/issues/29).
 
 ## Stable Release Blockers
 
@@ -194,6 +194,12 @@ These must be handled before calling OpenXTerm stable.
   - troubleshooting guide.
   - X11 guide.
   - known limitations.
+  - third-party license notices included with release artifacts.
+- Dependency and license audit:
+  - automated Cargo/npm license checks.
+  - generated third-party dependency reports.
+  - reviewed LGPL/MPL/Apache notice handling for binary artifacts.
+  - keep [#28](https://github.com/OpenXTerm/OpenXTerm/issues/28) and [#29](https://github.com/OpenXTerm/OpenXTerm/issues/29) closed before stable release.
 - QA matrix:
   - SSH password auth.
   - SSH key auth.

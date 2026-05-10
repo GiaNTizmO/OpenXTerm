@@ -17,6 +17,7 @@ import type {
   SessionDefinition,
   SessionFolderDefinition,
   SessionStatusPayload,
+  StatusBarMetrics,
   SystemAuthSupport,
   TerminalCwdPayload,
   TerminalExitPayload,
@@ -106,6 +107,22 @@ function isMacroList(value: unknown): value is MacroDefinition[] {
     ))
 }
 
+const STATUS_BAR_METRIC_KEYS: Array<keyof StatusBarMetrics> = [
+  'host',
+  'user',
+  'cpu',
+  'memory',
+  'disk',
+  'networkDown',
+  'networkUp',
+  'uptime',
+]
+
+function isStatusBarMetrics(value: unknown): value is StatusBarMetrics {
+  return isRecord(value)
+    && STATUS_BAR_METRIC_KEYS.every((key) => typeof value[key] === 'boolean')
+}
+
 function isUiPreferences(value: unknown): value is UiPreferences {
   if (!isRecord(value)) {
     return false
@@ -120,6 +137,14 @@ function isUiPreferences(value: unknown): value is UiPreferences {
     && (
       value.statusBarVisible === undefined
       || typeof value.statusBarVisible === 'boolean'
+    )
+    && (
+      value.statusBarSize === undefined
+      || ['compact', 'regular', 'large'].includes(String(value.statusBarSize))
+    )
+    && (
+      value.statusBarMetrics === undefined
+      || isStatusBarMetrics(value.statusBarMetrics)
     )
 }
 

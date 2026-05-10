@@ -58,6 +58,21 @@ export interface UiPreferences {
   activeSidebar: SidebarSection
   sidebarWidth?: number
   statusBarVisible?: boolean
+  statusBarSize?: StatusBarSize
+  statusBarMetrics?: StatusBarMetrics
+}
+
+export type StatusBarSize = 'compact' | 'regular' | 'large'
+
+export interface StatusBarMetrics {
+  host: boolean
+  user: boolean
+  cpu: boolean
+  memory: boolean
+  disk: boolean
+  networkDown: boolean
+  networkUp: boolean
+  uptime: boolean
 }
 
 export interface SystemAuthSupport {
@@ -241,6 +256,7 @@ export interface RemoteDragEntry {
 
 export type MenuAction =
   | 'open-settings'
+  | 'open-about'
   | 'new-session'
   | 'new-macro'
   | 'show-sessions'

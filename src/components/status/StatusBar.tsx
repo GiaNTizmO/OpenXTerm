@@ -1,7 +1,13 @@
 import { useMemo, type ReactNode } from 'react'
 import { Activity, Clock3, Cpu, HardDrive, Monitor, Network, User } from 'lucide-react'
 
+import {
+  DEFAULT_STATUS_BAR_METRICS,
+  normalizeStatusBarMetrics,
+  normalizeStatusBarSize,
+} from '../../lib/preferences'
 import type { SessionDefinition, SessionStatusSnapshot, WorkspaceTab } from '../../types/domain'
+import type { StatusBarMetrics, StatusBarSize } from '../../types/domain'
 
 interface StatusBarProps {
   activeTab: WorkspaceTab | undefined
@@ -11,6 +17,8 @@ interface StatusBarProps {
   sessionNetworkDownHistoryByTabId: Record<string, number[]>
   sessionNetworkUpHistoryByTabId: Record<string, number[]>
   sessionStatusByTabId: Record<string, SessionStatusSnapshot>
+  statusBarMetrics?: StatusBarMetrics
+  statusBarSize?: StatusBarSize
 }
 
 const STATUS_HISTORY_SIZE = 22
@@ -159,7 +167,11 @@ export function StatusBar({
   sessionNetworkDownHistoryByTabId,
   sessionNetworkUpHistoryByTabId,
   sessionStatusByTabId,
+  statusBarMetrics = DEFAULT_STATUS_BAR_METRICS,
+  statusBarSize = 'regular',
 }: StatusBarProps) {
+  const metrics = useMemo(() => normalizeStatusBarMetrics(statusBarMetrics), [statusBarMetrics])
+  const size = normalizeStatusBarSize(statusBarSize)
   const activeTabId = activeTab?.id
   const activeSession = useMemo(
     () => sessions.find((session) => session.id === activeTab?.sessionId),
@@ -194,10 +206,11 @@ export function StatusBar({
       up: compactValue(status.networkUpload, fallback.up),
     }
   }, [status])
+  const statusBarClassName = `statusbar statusbar-${size}`
 
   if (!activeSession) {
     return (
-      <footer className="statusbar">
+      <footer className={statusBarClassName}>
         <StatusSegment icon={<Monitor size={12} />} value="OpenXTerm" accent />
         <StatusSegment icon={<Activity size={12} />} value="Tauri shell online" />
         <StatusSegment icon={<Network size={12} />} value="Transports queued" />
@@ -207,70 +220,86 @@ export function StatusBar({
 
   if (!status) {
     return (
-      <footer className="statusbar">
+      <footer className={statusBarClassName}>
         <StatusSegment icon={<Activity size={12} />} value="loading" accent />
-        <StatusSegment icon={<Monitor size={12} />} value={activeSession.host || 'local'} />
-        <StatusSegment icon={<User size={12} />} value={activeSession.username || 'waiting for login'} />
-        <div className="status-segment status-metric-segment" title="Waiting for live status">
-          <span className="status-segment-icon"><Cpu size={12} /></span>
-          <span className="status-segment-label">CPU</span>
-          <MetricSparkline history={cpuHistory} />
-          <span className="status-segment-value">...</span>
-        </div>
-        <div className="status-segment status-metric-segment" title="Waiting for memory usage">
-          <span className="status-segment-icon"><Activity size={12} /></span>
-          <span className="status-segment-label">MEM</span>
-          <MetricSparkline history={memoryHistory} variant="memory" />
-          <span className="status-segment-value">...</span>
-        </div>
-        <StatusSegment icon={<HardDrive size={12} />} label="DISK" value="..." />
-        <div className="status-segment status-metric-segment" title="Waiting for download speed">
-          <span className="status-segment-icon"><Network size={12} /></span>
-          <span className="status-segment-label">DL</span>
-          <MetricSparkline history={networkDownHistory} variant="download" scale="auto" />
-          <span className="status-segment-value">...</span>
-        </div>
-        <div className="status-segment status-metric-segment" title="Waiting for upload speed">
-          <span className="status-segment-icon"><Network size={12} /></span>
-          <span className="status-segment-label">UL</span>
-          <MetricSparkline history={networkUpHistory} variant="upload" scale="auto" />
-          <span className="status-segment-value">...</span>
-        </div>
-        <StatusSegment icon={<Clock3 size={12} />} value="up ..." />
+        {metrics.host && <StatusSegment icon={<Monitor size={12} />} value={activeSession.host || 'local'} />}
+        {metrics.user && <StatusSegment icon={<User size={12} />} value={activeSession.username || 'waiting for login'} />}
+        {metrics.cpu && (
+          <div className="status-segment status-metric-segment" title="Waiting for live status">
+            <span className="status-segment-icon"><Cpu size={12} /></span>
+            <span className="status-segment-label">CPU</span>
+            <MetricSparkline history={cpuHistory} />
+            <span className="status-segment-value">...</span>
+          </div>
+        )}
+        {metrics.memory && (
+          <div className="status-segment status-metric-segment" title="Waiting for memory usage">
+            <span className="status-segment-icon"><Activity size={12} /></span>
+            <span className="status-segment-label">MEM</span>
+            <MetricSparkline history={memoryHistory} variant="memory" />
+            <span className="status-segment-value">...</span>
+          </div>
+        )}
+        {metrics.disk && <StatusSegment icon={<HardDrive size={12} />} label="DISK" value="..." />}
+        {metrics.networkDown && (
+          <div className="status-segment status-metric-segment" title="Waiting for download speed">
+            <span className="status-segment-icon"><Network size={12} /></span>
+            <span className="status-segment-label">DL</span>
+            <MetricSparkline history={networkDownHistory} variant="download" scale="auto" />
+            <span className="status-segment-value">...</span>
+          </div>
+        )}
+        {metrics.networkUp && (
+          <div className="status-segment status-metric-segment" title="Waiting for upload speed">
+            <span className="status-segment-icon"><Network size={12} /></span>
+            <span className="status-segment-label">UL</span>
+            <MetricSparkline history={networkUpHistory} variant="upload" scale="auto" />
+            <span className="status-segment-value">...</span>
+          </div>
+        )}
+        {metrics.uptime && <StatusSegment icon={<Clock3 size={12} />} value="up ..." />}
       </footer>
     )
   }
 
   return (
-    <footer className="statusbar">
-      <StatusSegment icon={<Monitor size={12} />} value={compactValue(status.host, 'host')} title={status.remoteOs} />
-      <StatusSegment icon={<User size={12} />} value={compactValue(status.user, 'user')} />
-      <div className="status-segment status-metric-segment" title={`CPU load ${status.cpuLoad}`}>
-        <span className="status-segment-icon"><Cpu size={12} /></span>
-        <span className="status-segment-label">CPU</span>
-        <MetricSparkline history={cpuHistory} />
-        <span className="status-segment-value">{compactValue(status.cpuLoad)}</span>
-      </div>
-      <div className="status-segment status-metric-segment" title={`Memory ${status.memoryUsage}`}>
-        <span className="status-segment-icon"><Activity size={12} /></span>
-        <span className="status-segment-label">MEM</span>
-        <MetricSparkline history={memoryHistory} variant="memory" />
-        <span className="status-segment-value">{compactValue(status.memoryUsage)}</span>
-      </div>
-      <StatusSegment icon={<HardDrive size={12} />} label="DISK" value={compactValue(status.diskUsage)} />
-      <div className="status-segment status-metric-segment" title={`Download ${networkValue.down}`}>
-        <span className="status-segment-icon"><Network size={12} /></span>
-        <span className="status-segment-label">DL</span>
-        <MetricSparkline history={networkDownHistory} variant="download" scale="auto" />
-        <span className="status-segment-value">{networkValue.down}</span>
-      </div>
-      <div className="status-segment status-metric-segment" title={`Upload ${networkValue.up}`}>
-        <span className="status-segment-icon"><Network size={12} /></span>
-        <span className="status-segment-label">UL</span>
-        <MetricSparkline history={networkUpHistory} variant="upload" scale="auto" />
-        <span className="status-segment-value">{networkValue.up}</span>
-      </div>
-      <StatusSegment icon={<Clock3 size={12} />} value={`up ${formatUptimeValue(status.uptime)}`} title={status.uptime} />
+    <footer className={statusBarClassName}>
+      {metrics.host && <StatusSegment icon={<Monitor size={12} />} value={compactValue(status.host, 'host')} title={status.remoteOs} />}
+      {metrics.user && <StatusSegment icon={<User size={12} />} value={compactValue(status.user, 'user')} />}
+      {metrics.cpu && (
+        <div className="status-segment status-metric-segment" title={`CPU load ${status.cpuLoad}`}>
+          <span className="status-segment-icon"><Cpu size={12} /></span>
+          <span className="status-segment-label">CPU</span>
+          <MetricSparkline history={cpuHistory} />
+          <span className="status-segment-value">{compactValue(status.cpuLoad)}</span>
+        </div>
+      )}
+      {metrics.memory && (
+        <div className="status-segment status-metric-segment" title={`Memory ${status.memoryUsage}`}>
+          <span className="status-segment-icon"><Activity size={12} /></span>
+          <span className="status-segment-label">MEM</span>
+          <MetricSparkline history={memoryHistory} variant="memory" />
+          <span className="status-segment-value">{compactValue(status.memoryUsage)}</span>
+        </div>
+      )}
+      {metrics.disk && <StatusSegment icon={<HardDrive size={12} />} label="DISK" value={compactValue(status.diskUsage)} />}
+      {metrics.networkDown && (
+        <div className="status-segment status-metric-segment" title={`Download ${networkValue.down}`}>
+          <span className="status-segment-icon"><Network size={12} /></span>
+          <span className="status-segment-label">DL</span>
+          <MetricSparkline history={networkDownHistory} variant="download" scale="auto" />
+          <span className="status-segment-value">{networkValue.down}</span>
+        </div>
+      )}
+      {metrics.networkUp && (
+        <div className="status-segment status-metric-segment" title={`Upload ${networkValue.up}`}>
+          <span className="status-segment-icon"><Network size={12} /></span>
+          <span className="status-segment-label">UL</span>
+          <MetricSparkline history={networkUpHistory} variant="upload" scale="auto" />
+          <span className="status-segment-value">{networkValue.up}</span>
+        </div>
+      )}
+      {metrics.uptime && <StatusSegment icon={<Clock3 size={12} />} value={`up ${formatUptimeValue(status.uptime)}`} title={status.uptime} />}
     </footer>
   )
 }

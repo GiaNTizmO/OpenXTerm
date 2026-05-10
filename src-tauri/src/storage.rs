@@ -2,7 +2,7 @@ use std::{fs, path::PathBuf};
 
 use tauri::{AppHandle, Manager};
 
-use crate::models::{MacroDefinition, StorageModel, UiPreferences};
+use crate::models::{MacroDefinition, StatusBarMetrics, StorageModel, UiPreferences};
 
 pub fn load_storage(app: &AppHandle) -> Result<StorageModel, String> {
     let storage_path = storage_path(app)?;
@@ -74,6 +74,17 @@ fn seed_storage() -> StorageModel {
             active_sidebar: "sessions".into(),
             sidebar_width: Some(252),
             status_bar_visible: true,
+            status_bar_size: "regular".into(),
+            status_bar_metrics: StatusBarMetrics {
+                host: true,
+                user: true,
+                cpu: true,
+                memory: true,
+                disk: true,
+                network_down: true,
+                network_up: true,
+                uptime: true,
+            },
         },
     }
 }

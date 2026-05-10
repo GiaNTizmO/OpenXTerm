@@ -1,5 +1,5 @@
 #[cfg(target_os = "macos")]
-use tauri::menu::{AboutMetadata, MenuBuilder, SubmenuBuilder};
+use tauri::menu::{MenuBuilder, SubmenuBuilder};
 use tauri::{AppHandle, Emitter, Runtime};
 
 const MENU_ACTION_EVENT: &str = "openxterm://menu-action";
@@ -9,11 +9,7 @@ pub fn install_macos_menu<R: Runtime>(_app: &AppHandle<R>) -> tauri::Result<()> 
     {
         let app = _app;
         let app_menu = SubmenuBuilder::new(app, "OpenXTerm")
-            .about(Some(AboutMetadata {
-                name: Some("OpenXTerm".into()),
-                version: Some(env!("CARGO_PKG_VERSION").into()),
-                ..Default::default()
-            }))
+            .text("open-about", "About OpenXTerm")
             .separator()
             .text("open-settings", "Settings...")
             .separator()
@@ -101,9 +97,9 @@ pub fn install_macos_menu<R: Runtime>(_app: &AppHandle<R>) -> tauri::Result<()> 
 
 pub fn handle_menu_event<R: Runtime>(app: &AppHandle<R>, id: &str) {
     let action = match id {
-        "open-settings" | "new-session" | "new-macro" | "show-sessions" | "show-sftp"
-        | "show-tools" | "show-macros" | "lock-app" | "search-terminal" | "clear-terminal"
-        | "reset-terminal" => Some(id),
+        "open-settings" | "open-about" | "new-session" | "new-macro" | "show-sessions"
+        | "show-sftp" | "show-tools" | "show-macros" | "lock-app" | "search-terminal"
+        | "clear-terminal" | "reset-terminal" => Some(id),
         _ => None,
     };
 

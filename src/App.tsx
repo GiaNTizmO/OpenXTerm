@@ -5,7 +5,7 @@ import { MoveSessionModal } from './components/forms/MoveSessionModal'
 import { SessionFolderModal } from './components/forms/SessionFolderModal'
 import { DeleteSessionFolderModal } from './components/forms/DeleteSessionFolderModal'
 import { SessionEditorModal } from './components/forms/SessionEditorModal'
-import { AppSettingsModal } from './components/forms/AppSettingsModal'
+import { AppSettingsModal, type AppSettingsTab } from './components/forms/AppSettingsModal'
 import { AppLockOverlay } from './components/forms/AppLockOverlay'
 import { TopBar } from './components/layout/TopBar'
 import { installEditablePasteShortcut } from './lib/editablePaste'
@@ -71,6 +71,7 @@ export function App() {
   const [sessionModalOpen, setSessionModalOpen] = useState(false)
   const [macroModalOpen, setMacroModalOpen] = useState(false)
   const [settingsModalOpen, setSettingsModalOpen] = useState(false)
+  const [settingsInitialTab, setSettingsInitialTab] = useState<AppSettingsTab>('interface')
   const [moveSessionModalOpen, setMoveSessionModalOpen] = useState(false)
   const [sessionFolderModalOpen, setSessionFolderModalOpen] = useState(false)
   const [sidebarWidthDraft, setSidebarWidthDraft] = useState<number | null>(null)
@@ -206,6 +207,11 @@ export function App() {
   const handleMenuAction = useCallback((action: MenuAction) => {
     switch (action) {
       case 'open-settings':
+        setSettingsInitialTab('interface')
+        setSettingsModalOpen(true)
+        break
+      case 'open-about':
+        setSettingsInitialTab('about')
         setSettingsModalOpen(true)
         break
       case 'new-session':
@@ -476,6 +482,8 @@ export function App() {
               sessionNetworkUpHistoryByTabId={sessionNetworkUpHistoryByTabId}
               sessionStatusByTabId={sessionStatusByTabId}
               sessions={sessions}
+              statusBarMetrics={preferences.statusBarMetrics}
+              statusBarSize={preferences.statusBarSize}
             />
           )}
         </div>
@@ -483,6 +491,7 @@ export function App() {
 
       {settingsModalOpen && (
         <AppSettingsModal
+          initialTab={settingsInitialTab}
           lockSupport={lockSupport}
           open={settingsModalOpen}
           preferences={preferences}

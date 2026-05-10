@@ -1,10 +1,13 @@
 import type { AppBootstrap, MacroDefinition, UiPreferences } from '../types/domain'
+import { DEFAULT_STATUS_BAR_METRICS } from './preferences'
 
 const DEFAULT_PREFERENCES: UiPreferences = {
   theme: 'dark',
   activeSidebar: 'sessions',
   sidebarWidth: 252,
   statusBarVisible: true,
+  statusBarSize: 'regular',
+  statusBarMetrics: { ...DEFAULT_STATUS_BAR_METRICS },
 }
 
 const DEFAULT_MACROS: MacroDefinition[] = [

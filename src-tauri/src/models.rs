@@ -87,10 +87,56 @@ pub struct UiPreferences {
     pub sidebar_width: Option<u16>,
     #[serde(default = "default_status_bar_visible")]
     pub status_bar_visible: bool,
+    #[serde(default = "default_status_bar_size")]
+    pub status_bar_size: String,
+    #[serde(default = "default_status_bar_metrics")]
+    pub status_bar_metrics: StatusBarMetrics,
 }
 
 fn default_status_bar_visible() -> bool {
     true
+}
+
+fn default_status_bar_size() -> String {
+    "regular".into()
+}
+
+fn default_status_bar_metric_visible() -> bool {
+    true
+}
+
+fn default_status_bar_metrics() -> StatusBarMetrics {
+    StatusBarMetrics {
+        host: true,
+        user: true,
+        cpu: true,
+        memory: true,
+        disk: true,
+        network_down: true,
+        network_up: true,
+        uptime: true,
+    }
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct StatusBarMetrics {
+    #[serde(default = "default_status_bar_metric_visible")]
+    pub host: bool,
+    #[serde(default = "default_status_bar_metric_visible")]
+    pub user: bool,
+    #[serde(default = "default_status_bar_metric_visible")]
+    pub cpu: bool,
+    #[serde(default = "default_status_bar_metric_visible")]
+    pub memory: bool,
+    #[serde(default = "default_status_bar_metric_visible")]
+    pub disk: bool,
+    #[serde(default = "default_status_bar_metric_visible")]
+    pub network_down: bool,
+    #[serde(default = "default_status_bar_metric_visible")]
+    pub network_up: bool,
+    #[serde(default = "default_status_bar_metric_visible")]
+    pub uptime: bool,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]

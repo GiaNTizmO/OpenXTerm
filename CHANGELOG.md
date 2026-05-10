@@ -7,19 +7,24 @@ Release entries are generated during the manual CI/CD release flow from GitHub r
 ## v0.0.5 - 2026-05-10
 
 ### Highlights
-- Added a flat workspace tabstrip. @GiaNTizmO
-- Introduced status bar settings and an about tab. @GiaNTizmO
-- Implemented AI-assisted release changelog generation. @GiaNTizmO
+
+-   Add flat workspace tabstrip by @GiaNTizmO
+-   Add status bar settings and about tab by @GiaNTizmO
 
 ### Fixes
-- Fixed release changelog source collection. @GiaNTizmO
 
-### Refactors
-- Centralized remote file helpers. @GiaNTizmO
-- Split transfer upload and download modules. @GiaNTizmO
-- Redesigned the session editor modal. @GiaNTizmO
+-   Fix release changelog source collection by @GiaNTizmO
+-   Fix release notes date and asset filtering by @GiaNTizmO
+
+### Maintenance
+
+-   Centralize remote file helpers by @GiaNTizmO
+-   Split transfer upload and download modules by @GiaNTizmO
+-   Redesign session editor modal by @GiaNTizmO
+-   Add AI-assisted release changelog generation by @GiaNTizmO
 
 ### Documentation
-- Updated agent file references. @GiaNTizmO
-- Updated image showcase. @GiaNTizmO
-- Added legal hygiene documentation and about links. @GiaNTizmO
+
+-   Update agent file references by @GiaNTizmO
+-   Update img showcase by @GiaNTizmO
+-   Add legal hygiene docs and about links by @GiaNTizmO

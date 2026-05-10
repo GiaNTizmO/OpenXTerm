@@ -44,10 +44,11 @@ npm run changelog:generate -- \
   --output generated-changelog-entry.md \
   --release-tag v0.2.0 \
   --previous-tag v0.1.0 \
+  --release-date 2026-05-10 \
   --changelog-path CHANGELOG.md
 ```
 
-Set the GitHub Actions secret `GEMINI_API_KEY` to enable the Gemini rewrite path in CI. If the key is missing, the model call fails, or the model output drops pull request references or contributor mentions, the script falls back to the collected release source.
+Set the GitHub Actions secret `GEMINI_API_KEY` to enable the Gemini rewrite path in CI. If the key is missing, the model call fails, the model output drops pull request references or contributor mentions, or the model invents a heading date, the script normalizes the heading and falls back to the collected release source when needed.
 
 ## Release Assets
 
@@ -56,6 +57,8 @@ The release job uploads the native Tauri bundle outputs from enabled matrix targ
 - macOS: `.dmg` bundles from Tauri
 - Windows: Tauri installer bundles plus `openxterm-windows-*-portable.zip`
 - Linux: Tauri Linux bundles such as AppImage / Debian package outputs, depending on the bundler output for that runner
+
+Internal package build files such as `control.tar.gz` and `data.tar.gz` are excluded from uploaded release artifacts.
 
 The configured build matrix includes Linux X64, Linux ARM64, Windows X64, Windows ARM64, macOS ARM64, and macOS X64. For the current CI/CD test pass only Linux X64, Windows X64, and macOS ARM64 are enabled; disabled targets remain in the workflow with `enabled: false`.
 
@@ -86,7 +89,7 @@ That collected source is the source of truth for pull request references and con
 - rewrites them with Gemini 2.5 Flash when `GEMINI_API_KEY` is configured, or
 - uses the collected source directly as a fallback.
 
-The generator validates that pull request URLs, `#123` references, and `@contributor` mentions from the collected source are still present. If validation fails, it uses the fallback notes.
+The generator validates that pull request URLs, `#123` references, and `@contributor` mentions from the collected source are still present. It also forces the first heading to the CI-provided release date. If validation fails, it uses the fallback notes.
 
 Example: running the workflow for `v0.2.0` after `v0.1.0` creates a `CHANGELOG.md` entry and GitHub Release notes for changes since `v0.1.0`.
 

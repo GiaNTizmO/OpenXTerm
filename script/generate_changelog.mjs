@@ -124,9 +124,8 @@ function formatCollectedSourceFallback(source) {
   return lines.join('\n').trim();
 }
 
-function formatFallbackEntry({ releaseTag, previousTag, generatedNotes }) {
-  const date = new Date().toISOString().slice(0, 10);
-  const lines = [`## ${releaseTag} - ${date}`, ''];
+function formatFallbackEntry({ releaseTag, previousTag, releaseDate, generatedNotes }) {
+  const lines = [`## ${releaseTag} - ${releaseDate}`, ''];
 
   if (previousTag) {
     lines.push(`Changes since \`${previousTag}\`.`);
@@ -141,17 +140,18 @@ function formatFallbackEntry({ releaseTag, previousTag, generatedNotes }) {
   return `${lines.join('\n')}\n`;
 }
 
-function buildPrompt({ releaseTag, previousTag, generatedNotes }) {
+function buildPrompt({ releaseTag, previousTag, releaseDate, generatedNotes }) {
   const previousCopy = previousTag ? `Previous release tag: ${previousTag}` : 'This is the first release tag.';
   return `You are writing release changelog notes for OpenXTerm, a Tauri desktop terminal workspace.
 
 Release tag: ${releaseTag}
+Release date: ${releaseDate}
 ${previousCopy}
 
 Rewrite the collected release source into a concise, high-signal Markdown changelog entry.
 
 Hard requirements:
-- Start with exactly this heading format: ## ${releaseTag} - YYYY-MM-DD
+- Start with exactly this heading: ## ${releaseTag} - ${releaseDate}
 - Preserve every pull request number, pull request URL, issue reference, and @contributor mention from the input exactly.
 - Do not invent PRs, contributors, features, fixes, dates, or compatibility claims.
 - Keep contributor attribution attached to the relevant bullet when the input contains it.
@@ -164,7 +164,7 @@ Collected release source:
 ${generatedNotes}`;
 }
 
-async function generateWithGemini({ releaseTag, previousTag, generatedNotes }) {
+async function generateWithGemini({ releaseTag, previousTag, releaseDate, generatedNotes }) {
   const apiKey = process.env.GEMINI_API_KEY?.trim();
   if (!apiKey) {
     return null;
@@ -187,7 +187,7 @@ async function generateWithGemini({ releaseTag, previousTag, generatedNotes }) {
         contents: [
           {
             role: 'user',
-            parts: [{ text: buildPrompt({ releaseTag, previousTag, generatedNotes }) }],
+            parts: [{ text: buildPrompt({ releaseTag, previousTag, releaseDate, generatedNotes }) }],
           },
         ],
         generationConfig: {
@@ -218,7 +218,7 @@ async function generateWithGemini({ releaseTag, previousTag, generatedNotes }) {
   }
 }
 
-function normalizeGeneratedEntry({ releaseTag, entry, fallbackEntry, generatedNotes }) {
+function normalizeGeneratedEntry({ releaseTag, releaseDate, entry, fallbackEntry, generatedNotes }) {
   const requiredTokens = collectRequiredTokens(generatedNotes);
   const missing = missingTokens(requiredTokens, entry);
   if (missing.length > 0) {
@@ -226,14 +226,15 @@ function normalizeGeneratedEntry({ releaseTag, entry, fallbackEntry, generatedNo
     return fallbackEntry;
   }
 
-  const today = new Date().toISOString().slice(0, 10);
-  let normalized = entry.trim().replace(
-    new RegExp(`^##\\s+${releaseTag.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\s+-\\s+YYYY-MM-DD`, 'm'),
-    `## ${releaseTag} - ${today}`,
-  );
+  const escapedReleaseTag = releaseTag.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  const heading = `## ${releaseTag} - ${releaseDate}`;
+  const headingPattern = new RegExp(`^##\\s+${escapedReleaseTag}\\s+-\\s+.*$`, 'm');
+  let normalized = entry.trim();
 
-  if (!normalized.startsWith(`## ${releaseTag} - `)) {
-    normalized = `${fallbackEntry.split('\n')[0]}\n\n${normalized}`;
+  if (headingPattern.test(normalized)) {
+    normalized = normalized.replace(headingPattern, heading);
+  } else if (!normalized.startsWith(heading)) {
+    normalized = `${heading}\n\n${normalized}`;
   }
 
   return `${normalized.trim()}\n`;
@@ -264,13 +265,16 @@ const inputPath = required(args, 'input');
 const outputPath = required(args, 'output');
 const releaseTag = required(args, 'release-tag');
 const previousTag = args.get('previous-tag')?.trim() ?? '';
+const releaseDate = args.get('release-date')?.trim()
+  || process.env.RELEASE_DATE?.trim()
+  || new Date().toISOString().slice(0, 10);
 const changelogPath = args.get('changelog-path')?.trim();
 
 const generatedNotes = readText(inputPath);
-const fallbackEntry = formatFallbackEntry({ releaseTag, previousTag, generatedNotes });
-const geminiEntry = await generateWithGemini({ releaseTag, previousTag, generatedNotes });
+const fallbackEntry = formatFallbackEntry({ releaseTag, previousTag, releaseDate, generatedNotes });
+const geminiEntry = await generateWithGemini({ releaseTag, previousTag, releaseDate, generatedNotes });
 const entry = geminiEntry
-  ? normalizeGeneratedEntry({ releaseTag, entry: geminiEntry, fallbackEntry, generatedNotes })
+  ? normalizeGeneratedEntry({ releaseTag, releaseDate, entry: geminiEntry, fallbackEntry, generatedNotes })
   : fallbackEntry;
 
 writeText(outputPath, entry);

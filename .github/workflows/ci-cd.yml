@@ -87,6 +87,7 @@ jobs:
           done
 
           TARGET_COMMITISH="$(git rev-parse HEAD)"
+          RELEASE_DATE="$(date -u +%F)"
           if [ -n "$PREVIOUS_TAG" ]; then
             gh api "repos/$GITHUB_REPOSITORY/releases/generate-notes" \
               -f tag_name="$RELEASE_TAG" \
@@ -112,6 +113,7 @@ jobs:
             --output generated-changelog-entry.md \
             --release-tag "$RELEASE_TAG" \
             --previous-tag "$PREVIOUS_TAG" \
+            --release-date "$RELEASE_DATE" \
             --changelog-path CHANGELOG.md
 
           node script/set_version.mjs "$RELEASE_VERSION"
@@ -352,6 +354,8 @@ jobs:
             src-tauri/target/${{ matrix.target }}/release/bundle/**/*.msi
             src-tauri/target/${{ matrix.target }}/release/bundle/**/*.rpm
             src-tauri/target/${{ matrix.target }}/release/bundle/**/*.tar.gz
+            !src-tauri/target/${{ matrix.target }}/release/bundle/**/control.tar.gz
+            !src-tauri/target/${{ matrix.target }}/release/bundle/**/data.tar.gz
             release-portable/*.zip
 
   release:
@@ -413,12 +417,16 @@ jobs:
             gh api "repos/$GITHUB_REPOSITORY/releases/generate-notes" \
               -f tag_name="$RELEASE_TAG" \
               -f previous_tag_name="$PREVIOUS_TAG" \
+              -f target_commitish="$RELEASE_TAG" \
               --jq '.body // ""' > generated-release-notes.md
           else
             gh api "repos/$GITHUB_REPOSITORY/releases/generate-notes" \
               -f tag_name="$RELEASE_TAG" \
+              -f target_commitish="$RELEASE_TAG" \
               --jq '.body // ""' > generated-release-notes.md
           fi
+
+          RELEASE_DATE="$(date -u +%F)"
 
           node script/collect_release_notes_input.mjs \
             --github-notes generated-release-notes.md \
@@ -431,13 +439,19 @@ jobs:
             --input collected-release-notes-input.md \
             --output release-notes.md \
             --release-tag "$RELEASE_TAG" \
-            --previous-tag "$PREVIOUS_TAG"
+            --previous-tag "$PREVIOUS_TAG" \
+            --release-date "$RELEASE_DATE"
 
       - name: Download bundled artifacts
         uses: actions/download-artifact@v4
         with:
           path: release-assets
           merge-multiple: true
+
+      - name: Remove package internals from release assets
+        shell: bash
+        run: |
+          find release-assets -type f \( -name control.tar.gz -o -name data.tar.gz \) -delete
 
       - name: Publish release assets
         uses: softprops/action-gh-release@v2

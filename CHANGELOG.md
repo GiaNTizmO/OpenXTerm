@@ -6,4 +6,20 @@ Release entries are generated during the manual CI/CD release flow from GitHub r
 
 ## v0.0.5 - 2026-05-10
 
-**Full Changelog**: https://github.com/OpenXTerm/OpenXTerm/compare/v0.0.4...v0.0.5
+### Highlights
+- Added a flat workspace tabstrip. @GiaNTizmO
+- Introduced status bar settings and an about tab. @GiaNTizmO
+- Implemented AI-assisted release changelog generation. @GiaNTizmO
+
+### Fixes
+- Fixed release changelog source collection. @GiaNTizmO
+
+### Refactors
+- Centralized remote file helpers. @GiaNTizmO
+- Split transfer upload and download modules. @GiaNTizmO
+- Redesigned the session editor modal. @GiaNTizmO
+
+### Documentation
+- Updated agent file references. @GiaNTizmO
+- Updated image showcase. @GiaNTizmO
+- Added legal hygiene documentation and about links. @GiaNTizmO

@@ -199,6 +199,18 @@ jobs:
           workspaces: |
             ./src-tauri -> target
 
+      - name: License audit
+        run: |
+          npm run licenses:check
+          npm run licenses:generate
+
+      - name: Upload license reports
+        uses: actions/upload-artifact@v4
+        with:
+          name: dependency-license-reports
+          path: docs/legal/generated
+          if-no-files-found: error
+
       - name: Install Linux build dependencies
         run: |
           sudo apt-get update

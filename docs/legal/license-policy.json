@@ -1,0 +1,49 @@
+{
+  "allowedLicenses": [
+    "0BSD",
+    "Apache-2.0",
+    "BSD-2-Clause",
+    "BSD-3-Clause",
+    "BSL-1.0",
+    "BlueOak-1.0.0",
+    "CC-BY-4.0",
+    "CC0-1.0",
+    "ISC",
+    "LLVM-exception",
+    "MIT",
+    "MIT-0",
+    "Python-2.0",
+    "Unicode-3.0",
+    "Unicode-DFS-2016",
+    "Unlicense",
+    "Zlib"
+  ],
+  "reviewLicenses": [
+    "LGPL-2.1-only",
+    "LGPL-2.1-or-later",
+    "MPL-2.0"
+  ],
+  "reviewPackages": {
+    "cargo": {
+      "libssh-rs": "Rust bindings are MIT, but OpenXTerm enables vendored libssh through libssh-rs-sys; release notices must cover native libssh LGPL obligations.",
+      "libssh-rs-sys": "Build helper can vendor native libssh; Cargo metadata does not fully describe native libssh licensing.",
+      "openssl-src": "Vendored OpenSSL source requires Apache-2.0 LICENSE/NOTICE review for binary artifacts.",
+      "serialport": "MPL-2.0 dependency is acceptable for API use but remains notice/review-sensitive."
+    },
+    "npm": {}
+  },
+  "nativeNotices": [
+    {
+      "name": "libssh",
+      "license": "LGPL-2.1",
+      "source": "vendored through libssh-rs/libssh-rs-sys when the Cargo feature `vendored` is enabled",
+      "review": "Cargo metadata reports the Rust crates, not the full native libssh source tree. Keep THIRD_PARTY_LICENSES.md and release artifacts aligned."
+    },
+    {
+      "name": "OpenSSL",
+      "license": "Apache-2.0",
+      "source": "vendored through openssl-src when `vendored-openssl` is enabled",
+      "review": "OpenSSL LICENSE and NOTICE handling must be checked before binary releases."
+    }
+  ]
+}

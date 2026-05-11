@@ -72,6 +72,21 @@ Release artifacts must preserve third-party license notices. Before publishing a
 
 The current hand-written third-party notice file covers the known release-sensitive dependencies: vendored libssh, vendored OpenSSL, and `serialport`. The first-pass legal hygiene task is tracked in [#28](https://github.com/OpenXTerm/OpenXTerm/issues/28). Automated dependency license report generation is tracked in [#29](https://github.com/OpenXTerm/OpenXTerm/issues/29) and should be run once it exists.
 
+Before publishing a release, run:
+
+```bash
+npm run licenses:check
+npm run licenses:generate
+```
+
+Review:
+
+- [`docs/legal/license-audit.md`](legal/license-audit.md)
+- [`docs/legal/license-policy.json`](legal/license-policy.json)
+- [`docs/legal/generated/dependency-license-summary.md`](legal/generated/dependency-license-summary.md)
+
+The CI/CD verify job also runs the license audit and uploads `docs/legal/generated/` as the `dependency-license-reports` workflow artifact.
+
 ## Release Notes
 
 The workflow creates `v<version>`, finds the previous semver-like tag, then asks GitHub to generate release notes for the diff between:

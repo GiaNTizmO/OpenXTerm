@@ -11,6 +11,8 @@
     "check": "tsc -b && eslint . && npm run test",
     "changelog:collect": "node script/collect_release_notes_input.mjs",
     "changelog:generate": "node script/generate_changelog.mjs",
+    "licenses:check": "node script/license_audit.mjs --check",
+    "licenses:generate": "node script/license_audit.mjs --generate",
     "lint": "eslint .",
     "preview": "vite preview --host 127.0.0.1 --port 4173",
     "test": "vitest run",

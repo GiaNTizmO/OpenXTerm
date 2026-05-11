@@ -1,8 +1,15 @@
 # Third-Party Licenses
 
-OpenXTerm is licensed under the MIT License. It also includes and links software developed by third parties. This file records the first-pass license notice surface for release hygiene; automated dependency license reporting is tracked separately.
+OpenXTerm is licensed under the MIT License. It also includes and links software developed by third parties. This file records the hand-reviewed license notice surface for release hygiene.
 
 This document is not legal advice. It is a project-maintained inventory of important third-party license obligations and references.
+
+Generated dependency inventories live under `docs/legal/generated/`:
+
+- `docs/legal/generated/cargo-licenses.json`
+- `docs/legal/generated/npm-licenses.json`
+- `docs/legal/generated/native-notices.json`
+- `docs/legal/generated/dependency-license-summary.md`
 
 ## License-Sensitive Runtime Components
 
@@ -39,6 +46,17 @@ OpenXTerm uses `serialport` for serial session support.
 
 OpenXTerm currently uses `serialport` as an unmodified dependency.
 
+### MPL-2.0 transitive components
+
+The generated license report currently flags additional MPL-2.0 transitive dependencies for review, including Rust crates used through the Tauri/WebKit/CSS stack and npm `lightningcss` packages used by frontend tooling.
+
+Current review-sensitive groups include:
+
+- `cssparser`, `cssparser-macros`, `selectors`, `dtoa-short`, `dwrote`, and `option-ext` in the Cargo graph.
+- `lightningcss` and platform-specific `lightningcss-*` npm packages in the npm graph.
+
+These are tracked in `docs/legal/generated/dependency-license-summary.md`. They are not known to be modified by OpenXTerm, but release maintainers should keep them visible during dependency updates.
+
 ## Other Rust Dependencies
 
 OpenXTerm also depends on Rust crates under permissive licenses such as MIT, Apache-2.0, BSD, ISC, 0BSD, and similar terms. Important direct dependencies include:
@@ -68,6 +86,11 @@ The exact npm dependency graph is defined by `package.json` and `package-lock.js
 
 ## Automation Status
 
-This file is intentionally hand-written and conservative. Generated dependency license reports and CI checks are tracked in:
+This file is intentionally hand-written and conservative. The automated audit is implemented through:
 
-- <https://github.com/OpenXTerm/OpenXTerm/issues/29>
+- `npm run licenses:check`
+- `npm run licenses:generate`
+- `docs/legal/license-policy.json`
+- `docs/legal/license-audit.md`
+
+The CI/CD verify job runs the license check and uploads generated reports as workflow artifacts.

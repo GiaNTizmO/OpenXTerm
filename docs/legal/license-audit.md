@@ -19,7 +19,7 @@ npm run licenses:generate
 
 `licenses:check` fails on missing, unknown, or unreviewed licenses.
 
-`licenses:generate` writes deterministic reports to:
+`licenses:generate` writes deterministic reports to the ignored local output directory:
 
 ```text
 docs/legal/generated/
@@ -30,6 +30,8 @@ docs/legal/generated/
 ```
 
 The npm report keeps development dependencies visible with a `dev` flag. The public release notice remains the hand-reviewed `THIRD_PARTY_LICENSES.md`; generated reports are audit inputs and CI artifacts for now.
+
+`docs/legal/generated/` is intentionally not committed. CI/CD regenerates it and uploads it as the `dependency-license-reports` workflow artifact.
 
 ## Policy
 
@@ -55,7 +57,7 @@ Evaluated first-pass options:
 Current choice:
 
 - custom Node script for both ecosystems
-- generated JSON/Markdown committed for review
+- generated JSON/Markdown ignored locally
 - generated reports uploaded as CI artifacts
 
 ## Known Limitations

@@ -83,7 +83,7 @@ Review:
 
 - [`docs/legal/license-audit.md`](legal/license-audit.md)
 - [`docs/legal/license-policy.json`](legal/license-policy.json)
-- [`docs/legal/generated/dependency-license-summary.md`](legal/generated/dependency-license-summary.md)
+- `docs/legal/generated/dependency-license-summary.md` locally after generation, or the `dependency-license-reports` CI artifact
 
 The CI/CD verify job also runs the license audit and uploads `docs/legal/generated/` as the `dependency-license-reports` workflow artifact.
 

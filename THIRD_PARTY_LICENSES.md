@@ -4,7 +4,7 @@ OpenXTerm is licensed under the MIT License. It also includes and links software
 
 This document is not legal advice. It is a project-maintained inventory of important third-party license obligations and references.
 
-Generated dependency inventories live under `docs/legal/generated/`:
+Generated dependency inventories are produced by `npm run licenses:generate` under the ignored local directory `docs/legal/generated/` and uploaded by CI/CD as the `dependency-license-reports` artifact:
 
 - `docs/legal/generated/cargo-licenses.json`
 - `docs/legal/generated/npm-licenses.json`

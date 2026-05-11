@@ -17,6 +17,7 @@ src-tauri/gen
 Cargo.lock
 !src-tauri/Cargo.lock
 .codex
+docs/legal/generated/
 
 # Editor directories and files
 .vscode/*

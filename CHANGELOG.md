@@ -4,30 +4,39 @@ All notable changes to OpenXTerm are documented here.
 
 Release entries are generated during the manual CI/CD release flow from GitHub release notes. When `GEMINI_API_KEY` is configured, Gemini 2.5 Flash may rewrite the entry for readability, but the generator validates that pull request references and contributor mentions from GitHub's generated notes are preserved.
 
-## v0.0.5 - 2026-05-10
+## v0.0.5 - 2026-05-11
 
-### Highlights
-
--   Add flat workspace tabstrip by @GiaNTizmO
--   Add status bar settings and about tab by @GiaNTizmO
+### Features
+- Add flat workspace tabstrip by @GiaNTizmO
+- Add status bar settings and about tab by @GiaNTizmO
+- Add AI-assisted release changelog generation by @GiaNTizmO
+- Add versioned storage migrations by @GiaNTizmO
 
 ### Fixes
+- Fix release changelog source collection by @GiaNTizmO
+- Fix release notes date and asset filtering by @GiaNTizmO
+- Fix about legal document links by @GiaNTizmO
+- Keep linked SFTP bound to active SSH by @GiaNTizmO
 
--   Fix release changelog source collection by @GiaNTizmO
--   Fix release notes date and asset filtering by @GiaNTizmO
+### Refactors & Improvements
+- refactor: centralize remote file helpers by @GiaNTizmO
+- refactor: split transfer upload and download modules by @GiaNTizmO
+- refactor: redesign session editor modal by @GiaNTizmO
+- Simplify application menus by @GiaNTizmO
+- Refactor embedded SSH interactive runtime by @GiaNTizmO
 
 ### Maintenance
-
--   Centralize remote file helpers by @GiaNTizmO
--   Split transfer upload and download modules by @GiaNTizmO
--   Redesign session editor modal by @GiaNTizmO
--   Add AI-assisted release changelog generation by @GiaNTizmO
+- Automate dependency license audit by @GiaNTizmO
+- Stop committing generated license reports by @GiaNTizmO
 
 ### Documentation
+- #27: docs: add initial CHANGELOG.md by @Loumo-on (https://github.com/OpenXTerm/OpenXTerm/pull/27)
+- docs: update agent file references by @GiaNTizmO
+- docs: Update img showcase by @GiaNTizmO
+- Add legal hygiene docs and about links by @GiaNTizmO
 
--   Update agent file references by @GiaNTizmO
--   Update img showcase by @GiaNTizmO
--   Add legal hygiene docs and about links by @GiaNTizmO
+### New Contributors
+* @Loumo-on made their first contribution in https://github.com/OpenXTerm/OpenXTerm/pull/27
 
 ## v0.0.4 - 2026-05-08
 

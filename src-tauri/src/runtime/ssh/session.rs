@@ -254,6 +254,15 @@ fn userauth_public_key_with_configured_identity(
     context: &str,
     session: &SessionDefinition,
 ) -> Result<(), String> {
+    if !session.legacy_rsa_sha1_signatures && private_key_file_looks_like_rsa(key_path) {
+        return Err(humanize_ssh_error_message(
+            &format!(
+                "embedded SSH {context} modern key authentication rejects RSA private keys. Enable RSA compatibility for older BMCs or use an Ed25519/ECDSA key."
+            ),
+            session,
+        ));
+    }
+
     let private_key = SshKey::from_privkey_file(key_path, passphrase).map_err(|error| {
         humanize_ssh_error_message(
             &format!("embedded SSH {context} failed to load private key: {error}"),
@@ -313,6 +322,81 @@ fn userauth_public_key_with_configured_identity(
                 })
         }
     }
+}
+
+fn private_key_file_looks_like_rsa(key_path: &str) -> bool {
+    let Ok(contents) = fs::read_to_string(key_path) else {
+        return false;
+    };
+    if contents.contains("BEGIN RSA PRIVATE KEY") || contents.contains("ssh-rsa") {
+        return true;
+    }
+
+    let Some(body) = openssh_private_key_base64_body(&contents) else {
+        return false;
+    };
+    base64_decode(body.as_bytes())
+        .map(|decoded| {
+            decoded
+                .windows(b"ssh-rsa".len())
+                .any(|window| window == b"ssh-rsa")
+        })
+        .unwrap_or(false)
+}
+
+fn openssh_private_key_base64_body(contents: &str) -> Option<String> {
+    let mut inside = false;
+    let mut body = String::new();
+    for line in contents.lines() {
+        match line.trim() {
+            "-----BEGIN OPENSSH PRIVATE KEY-----" => {
+                inside = true;
+            }
+            "-----END OPENSSH PRIVATE KEY-----" => {
+                return inside.then_some(body);
+            }
+            value if inside => body.push_str(value),
+            _ => {}
+        }
+    }
+    None
+}
+
+fn base64_decode(input: &[u8]) -> Option<Vec<u8>> {
+    let mut output = Vec::with_capacity(input.len() * 3 / 4);
+    let mut chunk = [0u8; 4];
+    let mut chunk_len = 0usize;
+
+    for &byte in input {
+        let value = match byte {
+            b'A'..=b'Z' => byte - b'A',
+            b'a'..=b'z' => byte - b'a' + 26,
+            b'0'..=b'9' => byte - b'0' + 52,
+            b'+' => 62,
+            b'/' => 63,
+            b'=' => 64,
+            b'\r' | b'\n' | b'\t' | b' ' => continue,
+            _ => return None,
+        };
+
+        chunk[chunk_len] = value;
+        chunk_len += 1;
+        if chunk_len == 4 {
+            if chunk[0] == 64 || chunk[1] == 64 {
+                return None;
+            }
+            output.push((chunk[0] << 2) | (chunk[1] >> 4));
+            if chunk[2] != 64 {
+                output.push((chunk[1] << 4) | (chunk[2] >> 2));
+            }
+            if chunk[3] != 64 {
+                output.push((chunk[2] << 6) | chunk[3]);
+            }
+            chunk_len = 0;
+        }
+    }
+
+    (chunk_len == 0).then_some(output)
 }
 
 fn enable_legacy_rsa_key_signatures(

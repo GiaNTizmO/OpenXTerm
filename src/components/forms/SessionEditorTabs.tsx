@@ -528,7 +528,7 @@ export function SessionEditorAdvancedTab({
           </span>
           <span className="session-auth-copy">
             <strong>Modern</strong>
-            <span>Use current public key signatures.</span>
+            <span>Use Ed25519 or ECDSA keys.</span>
           </span>
         </button>
 
@@ -543,15 +543,15 @@ export function SessionEditorAdvancedTab({
             <KeyRound size={14} />
           </span>
           <span className="session-auth-copy">
-            <strong>Legacy RSA/SHA1</strong>
-            <span>For older BMCs and SSH servers.</span>
+            <strong>RSA compatibility</strong>
+            <span>Allow RSA keys for older endpoints.</span>
           </span>
         </button>
       </div>
 
       {draft.legacyRsaSha1Signatures && (
         <div className="editor-hint">
-          Enables ssh-rsa signatures for private-key authentication. Use only for servers that reject modern RSA signatures.
+          Allows RSA key signatures, including ssh-rsa, for private-key authentication. Use only for servers or BMCs that need RSA compatibility.
         </div>
       )}
 

@@ -10,8 +10,20 @@ use libssh_rs::{
 use crate::{models::SessionDefinition, proxy::configure_libssh_proxy_socket};
 
 const EMBEDDED_SSH_TIMEOUT: Duration = Duration::from_secs(8);
+const MODERN_KEY_EXCHANGE: &str =
+    "curve25519-sha256,curve25519-sha256@libssh.org,diffie-hellman-group18-sha512,diffie-hellman-group16-sha512";
+const MODERN_HOST_KEY_TYPES: &str = "ssh-ed25519,rsa-sha2-512,rsa-sha2-256";
+const MODERN_CIPHERS: &str =
+    "chacha20-poly1305@openssh.com,aes256-gcm@openssh.com,aes128-gcm@openssh.com";
+const MODERN_HMACS: &str = "hmac-sha2-512-etm@openssh.com,hmac-sha2-256-etm@openssh.com";
 const MODERN_PUBLIC_KEY_ACCEPTED_TYPES: &str =
     "ssh-ed25519,ecdsa-sha2-nistp521,ecdsa-sha2-nistp384,ecdsa-sha2-nistp256";
+const LEGACY_KEY_EXCHANGE: &str =
+    "ecdh-sha2-nistp256,ecdh-sha2-nistp384,ecdh-sha2-nistp521,diffie-hellman-group-exchange-sha256";
+const LEGACY_HOST_KEY_TYPES: &str =
+    "ecdsa-sha2-nistp384,ecdsa-sha2-nistp256,ecdsa-sha2-nistp521,ssh-rsa,ssh-dss,rsa-sha2-512,rsa-sha2-256";
+const LEGACY_CIPHERS: &str = "aes128-ctr,aes192-ctr,aes256-ctr";
+const LEGACY_HMACS: &str = "hmac-sha2-256,hmac-sha2-512";
 const LEGACY_RSA_PUBLIC_KEY_ACCEPTED_TYPES: &str =
     "ssh-rsa,rsa-sha2-512,rsa-sha2-256,ssh-ed25519,ecdsa-sha2-nistp521,ecdsa-sha2-nistp384,ecdsa-sha2-nistp256";
 
@@ -404,10 +416,16 @@ fn enable_legacy_rsa_key_signatures(
     context: &str,
     session: &SessionDefinition,
 ) -> Result<(), String> {
-    configure_public_key_accepted_types(
+    configure_ssh_algorithm_profile(
         ssh,
-        LEGACY_RSA_PUBLIC_KEY_ACCEPTED_TYPES,
-        "legacy ssh-rsa key signatures",
+        SshAlgorithmProfile {
+            label: "legacy SSH compatibility",
+            key_exchange: LEGACY_KEY_EXCHANGE,
+            host_keys: LEGACY_HOST_KEY_TYPES,
+            ciphers: LEGACY_CIPHERS,
+            hmacs: LEGACY_HMACS,
+            public_key_types: LEGACY_RSA_PUBLIC_KEY_ACCEPTED_TYPES,
+        },
         context,
         session,
     )
@@ -418,26 +436,108 @@ fn enable_modern_key_signatures(
     context: &str,
     session: &SessionDefinition,
 ) -> Result<(), String> {
-    configure_public_key_accepted_types(
+    configure_ssh_algorithm_profile(
         ssh,
-        MODERN_PUBLIC_KEY_ACCEPTED_TYPES,
-        "modern key signatures",
+        SshAlgorithmProfile {
+            label: "modern SSH algorithms",
+            key_exchange: MODERN_KEY_EXCHANGE,
+            host_keys: MODERN_HOST_KEY_TYPES,
+            ciphers: MODERN_CIPHERS,
+            hmacs: MODERN_HMACS,
+            public_key_types: MODERN_PUBLIC_KEY_ACCEPTED_TYPES,
+        },
         context,
         session,
     )
 }
 
-fn configure_public_key_accepted_types(
+struct SshAlgorithmProfile<'a> {
+    label: &'a str,
+    key_exchange: &'a str,
+    host_keys: &'a str,
+    ciphers: &'a str,
+    hmacs: &'a str,
+    public_key_types: &'a str,
+}
+
+fn configure_ssh_algorithm_profile(
     ssh: &LibsshSession,
-    accepted_types: &str,
-    label: &str,
+    profile: SshAlgorithmProfile<'_>,
     context: &str,
     session: &SessionDefinition,
 ) -> Result<(), String> {
-    ssh.set_option(SshOption::PublicKeyAcceptedTypes(accepted_types.into()))
+    set_ssh_option(
+        ssh,
+        SshOption::KeyExchange(profile.key_exchange.into()),
+        profile.label,
+        "key exchange",
+        context,
+        session,
+    )?;
+    set_ssh_option(
+        ssh,
+        SshOption::HostKeys(profile.host_keys.into()),
+        profile.label,
+        "host key algorithms",
+        context,
+        session,
+    )?;
+    set_ssh_option(
+        ssh,
+        SshOption::CiphersCS(profile.ciphers.into()),
+        profile.label,
+        "client-to-server ciphers",
+        context,
+        session,
+    )?;
+    set_ssh_option(
+        ssh,
+        SshOption::CiphersSC(profile.ciphers.into()),
+        profile.label,
+        "server-to-client ciphers",
+        context,
+        session,
+    )?;
+    set_ssh_option(
+        ssh,
+        SshOption::HmacCS(profile.hmacs.into()),
+        profile.label,
+        "client-to-server MACs",
+        context,
+        session,
+    )?;
+    set_ssh_option(
+        ssh,
+        SshOption::HmacSC(profile.hmacs.into()),
+        profile.label,
+        "server-to-client MACs",
+        context,
+        session,
+    )?;
+    set_ssh_option(
+        ssh,
+        SshOption::PublicKeyAcceptedTypes(profile.public_key_types.into()),
+        profile.label,
+        "public key signatures",
+        context,
+        session,
+    )
+}
+
+fn set_ssh_option(
+    ssh: &LibsshSession,
+    option: SshOption,
+    profile_label: &str,
+    option_label: &str,
+    context: &str,
+    session: &SessionDefinition,
+) -> Result<(), String> {
+    ssh.set_option(option)
         .map_err(|error| {
             humanize_ssh_error_message(
-                &format!("embedded SSH {context} failed to enable {label}: {error}"),
+                &format!(
+                    "embedded SSH {context} failed to configure {profile_label} {option_label}: {error}"
+                ),
                 session,
             )
         })

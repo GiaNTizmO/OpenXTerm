@@ -269,7 +269,7 @@ fn userauth_public_key_with_configured_identity(
     if !session.legacy_rsa_sha1_signatures && private_key_file_looks_like_rsa(key_path) {
         return Err(humanize_ssh_error_message(
             &format!(
-                "embedded SSH {context} modern key authentication rejects RSA private keys. Enable RSA compatibility for older BMCs or use an Ed25519/ECDSA key."
+                "embedded SSH {context} modern key authentication rejects RSA private keys. Enable RSA compatibility for legacy SSH endpoints or use an Ed25519/ECDSA key."
             ),
             session,
         ));

@@ -551,7 +551,7 @@ export function SessionEditorAdvancedTab({
 
       {draft.legacyRsaSha1Signatures && (
         <div className="editor-hint">
-          Allows RSA key signatures, including ssh-rsa, for private-key authentication. Use only for servers or BMCs that need RSA compatibility.
+          Allows RSA key signatures, including ssh-rsa, for private-key authentication. Use only for legacy SSH endpoints that need RSA compatibility.
         </div>
       )}
 

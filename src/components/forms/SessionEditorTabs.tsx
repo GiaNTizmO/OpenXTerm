@@ -1,5 +1,6 @@
 import {
   ExternalLink,
+  FolderOpen,
   FolderTree,
   KeyRound,
   LockKeyhole,
@@ -7,7 +8,8 @@ import {
   ShieldOff,
 } from 'lucide-react'
 
-import { openExternalTarget } from '../../lib/bridge'
+import { logOpenXTermError } from '../../lib/errorLog'
+import { openExternalTarget, pickPrivateKeyFile } from '../../lib/bridge'
 import type { LocalX11Support, SessionDraft } from '../../types/domain'
 import { FontFamilyPicker } from './FontFamilyPicker'
 import {
@@ -282,11 +284,32 @@ export function SessionEditorConnectionTab({
             {draft.authType === 'key' && (
               <label className="editor-field editor-field-wide">
                 <span>Key path</span>
-                <input
-                  placeholder="~/.ssh/id_ed25519"
-                  value={draft.keyPath}
-                  onChange={(event) => updateDraft({ keyPath: event.target.value })}
-                />
+                <div className="key-path-row">
+                  <input
+                    placeholder="~/.ssh/id_ed25519"
+                    value={draft.keyPath}
+                    onChange={(event) => updateDraft({ keyPath: event.target.value })}
+                  />
+                  <button
+                    className="ghost-button key-path-browse"
+                    type="button"
+                    onClick={async () => {
+                      try {
+                        const picked = await pickPrivateKeyFile(draft.keyPath)
+                        if (picked) {
+                          updateDraft({ keyPath: picked })
+                        }
+                      } catch (error) {
+                        logOpenXTermError('session-editor.pick-key', error, {
+                          previousKeyPath: draft.keyPath,
+                        })
+                      }
+                    }}
+                  >
+                    <FolderOpen size={14} />
+                    <span>Choose…</span>
+                  </button>
+                </div>
               </label>
             )}
           </div>

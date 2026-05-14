@@ -359,6 +359,29 @@ export async function openExternalTarget(target: string) {
   window.open(target, '_blank', 'noopener,noreferrer')
 }
 
+export async function pickPrivateKeyFile(defaultPath?: string): Promise<string | null> {
+  if (!isTauriRuntime()) {
+    return null
+  }
+
+  const { open } = await import('@tauri-apps/plugin-dialog')
+  const selection = await open({
+    multiple: false,
+    directory: false,
+    title: 'Select SSH private key',
+    defaultPath: defaultPath?.trim() || undefined,
+    filters: [
+      { name: 'SSH keys', extensions: ['pem', 'ppk', 'key'] },
+      { name: 'All files', extensions: ['*'] },
+    ],
+  })
+
+  if (typeof selection === 'string' && selection.trim().length > 0) {
+    return selection
+  }
+  return null
+}
+
 export async function listSystemFontFamilies() {
   if (isTauriRuntime()) {
     return invoke<string[]>('list_system_font_families')

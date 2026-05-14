@@ -4,6 +4,19 @@ All notable changes to OpenXTerm are documented here.
 
 Release entries are generated during the manual CI/CD release flow from GitHub release notes. When `GEMINI_API_KEY` is configured, Gemini 2.5 Flash may rewrite the entry for readability, but the generator validates that pull request references and contributor mentions from GitHub's generated notes are preserved.
 
+## v0.0.6 - 2026-05-14
+
+Changes since `v0.0.5`.
+
+### Pull Requests
+
+- #31: Ssh key auth legacy toggle by @GoGixdd (https://github.com/OpenXTerm/OpenXTerm/pull/31)
+- #32: refactor(ssh): auto-detect SSH compatibility from private key type (follow-up to #31) by @GiaNTizmO (https://github.com/OpenXTerm/OpenXTerm/pull/32)
+- #33: feat(session-editor): pick SSH private key with a native file dialog by @GiaNTizmO (https://github.com/OpenXTerm/OpenXTerm/pull/33)
+- #34: fix(deps): pin @tauri-apps/plugin-dialog to 2.6.x for tauri 2.10 compat by @GiaNTizmO (https://github.com/OpenXTerm/OpenXTerm/pull/34)
+
+**Full Changelog**: https://github.com/GiaNTizmO/OpenXTerm/compare/v0.0.5...v0.0.6
+
 ## v0.0.5 - 2026-05-11
 
 ### Features

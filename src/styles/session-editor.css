@@ -340,6 +340,27 @@
   max-width: 180px;
 }
 
+.key-path-row {
+  display: flex;
+  align-items: stretch;
+  gap: 6px;
+  min-width: 0;
+}
+
+.key-path-row > input {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.key-path-browse {
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  white-space: nowrap;
+  padding: 0 12px;
+}
+
 .session-auth-option,
 .terminal-preset-card {
   display: flex;

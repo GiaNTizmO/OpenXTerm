@@ -1,5 +1,7 @@
 #import <AppKit/AppKit.h>
 #import <UniformTypeIdentifiers/UniformTypeIdentifiers.h>
+#import <dispatch/dispatch.h>
+#include <stdbool.h>
 #import <stdint.h>
 
 extern int openxterm_native_drag_write_file(

@@ -4,6 +4,16 @@ All notable changes to OpenXTerm are documented here.
 
 Release entries are generated during the manual CI/CD release flow from GitHub release notes. When `GEMINI_API_KEY` is configured, Gemini 2.5 Flash may rewrite the entry for readability, but the generator validates that pull request references and contributor mentions from GitHub's generated notes are preserved.
 
+## v0.0.7 - 2026-05-14
+
+Changes since `v0.0.6`.
+
+### Direct Commits
+
+- 5eef919: fix(ci): pin Rust dialog plugin to npm version by @GiaNTizmO
+
+**Full Changelog**: https://github.com/GiaNTizmO/OpenXTerm/compare/v0.0.6...v0.0.7
+
 ## v0.0.5 - 2026-05-11
 
 ### Features

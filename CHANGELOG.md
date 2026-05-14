@@ -4,6 +4,16 @@ All notable changes to OpenXTerm are documented here.
 
 Release entries are generated during the manual CI/CD release flow from GitHub release notes. When `GEMINI_API_KEY` is configured, Gemini 2.5 Flash may rewrite the entry for readability, but the generator validates that pull request references and contributor mentions from GitHub's generated notes are preserved.
 
+## v0.0.8 - 2026-05-14
+
+Changes since `v0.0.7`.
+
+### Direct Commits
+
+- 1bd4783: fix(macOS): include native drag system headers by @GiaNTizmO
+
+**Full Changelog**: https://github.com/GiaNTizmO/OpenXTerm/compare/v0.0.7...v0.0.8
+
 ## v0.0.5 - 2026-05-11
 
 ### Features
